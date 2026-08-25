@@ -1,0 +1,2 @@
+depot,url,date_bascule,source_date,langage_principal,notes
+devhitoshi/call-generator,https://github.com/devhitoshi/call-generator,,AIDev all_pull_request (validation pilot only),Unknown,Do not use a first AIDev PR as an adoption bascule without an independent source.

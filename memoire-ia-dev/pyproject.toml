@@ -1,0 +1,50 @@
+[project]
+name = "memoire-ia-dev"
+version = "0.1.0"
+description = "Reproducible analysis of explicitly attributed AI usage in public GitHub repositories."
+requires-python = ">=3.11"
+dependencies = [
+    "pandas>=2.2",
+]
+
+[project.optional-dependencies]
+collect = [
+    "pydriller>=2.7",
+    "requests>=2.32",
+    "python-dotenv>=1.0",
+    "tqdm>=4.66",
+]
+analysis = [
+    "numpy>=2.0",
+    "scipy>=1.14",
+    "matplotlib>=3.9",
+    "seaborn>=0.13",
+]
+datasets = [
+    "datasets>=3.0",
+]
+dev = [
+    "pytest>=8.3",
+]
+all = [
+    "pydriller>=2.7",
+    "requests>=2.32",
+    "python-dotenv>=1.0",
+    "tqdm>=4.66",
+    "numpy>=2.0",
+    "scipy>=1.14",
+    "matplotlib>=3.9",
+    "seaborn>=0.13",
+    "datasets>=3.0",
+    "pytest>=8.3",
+]
+
+[project.scripts]
+memoire-ia-dev = "memoire_ia_dev.cli:main"
+
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
