@@ -9,11 +9,11 @@ import pandas as pd
 
 AUTOMATION_ACCOUNT = re.compile(r"dependabot|renovate|github-actions|github-action|codecov|snyk", re.I)
 TASK_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
-    ("fix", re.compile(r"\bfix(e[sd])?|bug|correct|repair\b", re.I)),
-    ("feat", re.compile(r"\bfeat(ure)?|add(ed|s|ing)?|implement\b", re.I)),
-    ("refactor", re.compile(r"\brefactor|cleanup|restructur\b", re.I)),
-    ("docs", re.compile(r"\bdocs?|readme|documentation\b", re.I)),
-    ("test", re.compile(r"\btests?|spec\b", re.I)),
+    ("fix", re.compile(r"\b(?:fix(?:e[sd])?|bug|correct|repair)\b", re.I)),
+    ("feat", re.compile(r"\b(?:feat(?:ure)?|add(?:ed|s|ing)?|implement)\b", re.I)),
+    ("refactor", re.compile(r"\b(?:refactor|cleanup|restructur)\b", re.I)),
+    ("docs", re.compile(r"\b(?:docs?|readme|documentation)\b", re.I)),
+    ("test", re.compile(r"\b(?:tests?|spec)\b", re.I)),
 )
 
 

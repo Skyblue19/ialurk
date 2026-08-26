@@ -102,6 +102,7 @@ def get_pull_requests(
     start_page: int = 1,
     max_pages: int | None = None,
     on_page: Callable[[pd.DataFrame, int], None] | None = None,
+    include_commit_identities: bool = False,
 ) -> tuple[pd.DataFrame, bool, int]:
     """Collect a bounded PR window, optionally emitting each completed page.
 
@@ -153,6 +154,14 @@ def get_pull_requests(
                 "closed_at": pr.get("closed_at"), "merge_commit_sha": pr.get("merge_commit_sha"),
             })
         tagged_page = tag_prs(pd.DataFrame(page_rows))
+        if include_commit_identities:
+            for index in tagged_page.index[tagged_page["outil"].isna()]:
+                committer_login = _find_agent_committer_login(
+                    requests, owner, repo, str(tagged_page.at[index, "identifiant"]), headers
+                )
+                if committer_login:
+                    tagged_page.at[index, "committer_login"] = committer_login
+            tagged_page = tag_prs(tagged_page)
         rows.extend(tagged_page.to_dict("records"))
         page += 1
         pages_collected += 1
@@ -169,6 +178,29 @@ def _parse_bound(value: str | None) -> datetime | None:
     if value is None:
         return None
     return pd.to_datetime(value, utc=True).to_pydatetime()
+
+
+def _find_agent_committer_login(
+    requests: Any, owner: str, repo: str, pull_number: str, headers: dict[str, str]
+) -> str | None:
+    """Return a recognized agent committer from one otherwise unattributed PR."""
+    page = 1
+    while True:
+        response = requests.get(
+            f"https://api.github.com/repos/{owner}/{repo}/pulls/{pull_number}/commits",
+            headers=headers,
+            params={"per_page": 100, "page": page},
+            timeout=30,
+        )
+        response.raise_for_status()
+        commits = response.json()
+        for commit in commits:
+            login = str((commit.get("committer") or {}).get("login") or "").strip()
+            if _match_agent_login(login):
+                return login
+        if len(commits) < 100:
+            return None
+        page += 1
 
 
 def tag_commits_or_prs(rows: list[dict[str, object]]) -> pd.DataFrame:

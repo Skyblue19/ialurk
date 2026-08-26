@@ -34,6 +34,14 @@ Ajoutez votre token GitHub dans `.env`. Le token est requis pour une collecte AP
 .\.venv\Scripts\memoire-ia-dev.exe prs organisation depot data\raw\pilote_prs.csv
 ```
 
+Pour recuperer les identites de committer lorsque les autres signaux n'ont rien attribue, ajoutez `--commit-identities` :
+
+```powershell
+.\.venv\Scripts\memoire-ia-dev.exe prs organisation depot data\raw\pilote_prs.csv --commit-identities
+```
+
+Cette option appelle l'API des commits uniquement pour les PR sans attribution prealable et peut donc consommer beaucoup de quota sur un grand depot. Le choix est enregistre dans le checkpoint et doit rester identique lors d'une reprise.
+
 ## Validation AIDev
 
 `memoire_ia_dev.validation.load_aidev()` telecharge la table PR `all_pull_request` de `hao-li/AIDev` uniquement a l'appel. `normalize_aidev_pull_requests()` adapte le schema verifie le 25 aout 2026 (`number`, `repo_url`, `agent`) en `identifiant`, `depot`, `outil_reference`, directement compatible avec `compare_to_reference()`. Passez une autre configuration explicite (`pr_commits`, `pr_reviews`, etc.) lorsque necessaire.

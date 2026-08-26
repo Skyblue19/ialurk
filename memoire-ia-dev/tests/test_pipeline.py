@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 
 from memoire_ia_dev.analysis import compare_periods
-from memoire_ia_dev.cleaning import clean_commits
+from memoire_ia_dev.cleaning import classify_task, clean_commits
 from memoire_ia_dev.metrics import add_year_and_period, build_annual_summary, build_quarterly_summary, commit_metrics
 from memoire_ia_dev.policies import classify_policy
 from memoire_ia_dev.prs import detect_pr_attribution
@@ -42,6 +42,47 @@ def test_detects_agent_via_committer_identity() -> None:
     assert result is not None
     assert result.tool == "cursor"
     assert result.signal == "committer_login"
+
+
+def test_collects_agent_committer_only_for_unattributed_prs(monkeypatch) -> None:
+    from memoire_ia_dev import prs
+
+    class Response:
+        def __init__(self, payload):
+            self.payload = payload
+
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self):
+            return self.payload
+
+    class Requests:
+        def __init__(self) -> None:
+            self.urls: list[str] = []
+
+        def get(self, url, **_kwargs):
+            self.urls.append(url)
+            if url.endswith("/pulls"):
+                if _kwargs["params"]["page"] > 1:
+                    return Response([])
+                return Response([
+                    {"number": 1, "created_at": "2025-01-02T00:00:00Z", "user": {"login": "human", "type": "User"}, "head": {"ref": "feature/x"}},
+                    {"number": 2, "created_at": "2025-01-01T00:00:00Z", "user": {"login": "copilot", "type": "Bot"}, "head": {"ref": "copilot/fix"}},
+                ])
+            if url.endswith("/pulls/1/commits"):
+                return Response([{"committer": {"login": "cursoragent"}}])
+            raise AssertionError(url)
+
+    fake_requests = Requests()
+    monkeypatch.setitem(__import__("sys").modules, "requests", fake_requests)
+    result, complete, _ = prs.get_pull_requests("owner", "repo", include_commit_identities=True)
+
+    assert complete
+    assert result.loc[result["identifiant"] == "1", "committer_login"].item() == "cursoragent"
+    assert result.loc[result["identifiant"] == "1", "outil"].item() == "cursor"
+    assert fake_requests.urls.count("https://api.github.com/repos/owner/repo/pulls/1/commits") == 1
+    assert not any(url.endswith("/pulls/2/commits") for url in fake_requests.urls)
 
 
 def test_detects_agent_via_head_branch_convention() -> None:
@@ -166,6 +207,13 @@ def test_cleaning_flags_automation_and_categories_without_dropping_rows() -> Non
     assert result.loc[0, "bot_automation"]
     assert result.loc[0, "taille"] == 5
     assert result.loc[0, "categorie_tache"] == "fix"
+
+
+def test_task_keywords_do_not_match_inside_words() -> None:
+    assert classify_task("debug the parser") == "other"
+    assert classify_task("incorrect handling") == "other"
+    assert classify_task("breadme typo") == "other"
+    assert classify_task("add tests") == "feat"
 
 
 def test_classifies_disclosure_policy_deterministically() -> None:

@@ -38,6 +38,10 @@ def main() -> None:
     pr_parser.add_argument("--since", help="Inclusive PR creation date, for example 2023-01-01.")
     pr_parser.add_argument("--until", help="Inclusive PR creation date, for example 2025-12-31.")
     pr_parser.add_argument("--max-pages", type=int, help="Stop after this many API pages; use --resume to continue.")
+    pr_parser.add_argument(
+        "--commit-identities", action="store_true",
+        help="For PRs without another signal, inspect committers for recognized AI agent accounts (uses extra API requests).",
+    )
     pr_parser.add_argument("--resume", action="store_true", help="Continue from the checkpoint next to the output CSV.")
     status_parser = commands.add_parser("status", help="Show collection coverage and checkpoint progress for a PR CSV.")
     status_parser.add_argument("output", help="PR CSV path used by the prs command")
@@ -71,6 +75,8 @@ def main() -> None:
                 raise ValueError("Checkpoint repository does not match the requested repository")
             if state.get("since") != args.since or state.get("until") != args.until:
                 raise ValueError("Checkpoint dates do not match the requested period")
+            if state.get("commit_identities", False) != args.commit_identities:
+                raise ValueError("Checkpoint commit identity setting does not match the requested collection")
             start_page = state["next_page"]
             if output.exists():
                 existing = pd.read_csv(output)
@@ -81,12 +87,12 @@ def main() -> None:
             existing.to_csv(output, index=False)
             checkpoint.write_text(json.dumps({
                 "owner": args.owner, "repo": args.repo, "since": args.since,
-                "until": args.until, "next_page": next_page,
+                "until": args.until, "commit_identities": args.commit_identities, "next_page": next_page,
             }, ensure_ascii=True, indent=2), encoding="utf-8")
 
         _, complete, _ = get_pull_requests(
             args.owner, args.repo, os.getenv("GITHUB_TOKEN"), args.since, args.until,
-            start_page, args.max_pages, save_page,
+            start_page, args.max_pages, save_page, args.commit_identities,
         )
         if complete:
             checkpoint.unlink(missing_ok=True)
