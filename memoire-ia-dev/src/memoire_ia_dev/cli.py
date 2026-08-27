@@ -10,7 +10,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from .collect_commits import extract_commits, extract_commits_fast, find_config_bascules
+from .collect_commits import extract_commits, extract_commits_fast, find_config_bascule_details, find_config_bascules
+from .batch import run_batch
 from .prs import get_pull_requests
 from .validation import evaluate_aidev_full, load_aidev
 
@@ -31,6 +32,7 @@ def main() -> None:
     commit_parser.add_argument("--fast", action="store_true", help="Use git metadata only; omit diff-size metrics for large histories.")
     bascule_parser = commands.add_parser("bascules", help="Find configuration-file bascules in a local clone.")
     bascule_parser.add_argument("repo_path")
+    bascule_parser.add_argument("--details", action="store_true", help="Include rejected configuration files and their addition commits.")
     pr_parser = commands.add_parser("prs", help="Collect and tag closed GitHub pull requests.")
     pr_parser.add_argument("owner")
     pr_parser.add_argument("repo")
@@ -49,6 +51,16 @@ def main() -> None:
     aidev_parser = commands.add_parser("eval-aidev", help="Evaluate PR detection over the complete AIDev positive corpus.")
     aidev_parser.add_argument("output", help="JSON report path")
     aidev_parser.add_argument("--records-output", help="Optional CSV path for row-level evaluation records")
+    batch_parser = commands.add_parser("batch", help="Run the manifest-driven collection and analysis workflow.")
+    batch_parser.add_argument("manifest", help="CSV repository manifest")
+    batch_parser.add_argument("--workdir", default=".work", help="Directory for local clones")
+    batch_parser.add_argument("--rawdir", default="data/raw", help="Directory for raw CSV exports")
+    batch_parser.add_argument("--processeddir", default="data/processed", help="Directory for summaries and charts")
+    batch_parser.add_argument("--since", default="2020-06-01")
+    batch_parser.add_argument("--until", default="2026-08-25")
+    batch_parser.add_argument("--max-pages", type=int, default=50, help="PR pages per resumable batch")
+    batch_parser.add_argument("--no-commit-identities", action="store_true", help="Disable targeted committer identity lookups")
+    batch_parser.add_argument("--wait-for-rate-limit", action="store_true", help="Wait for GitHub quota reset and resume automatically")
     args = parser.parse_args()
 
     if args.command == "commits":
@@ -57,8 +69,11 @@ def main() -> None:
         extractor = extract_commits_fast if args.fast else extract_commits
         extractor(args.repo_path, _parse_date(args.since), _parse_date(args.until)).to_csv(output, index=False)
     elif args.command == "bascules":
-        for tool, date in find_config_bascules(args.repo_path).items():
-            print(f"{tool},{date}")
+        if args.details:
+            print(find_config_bascule_details(args.repo_path).to_csv(index=False), end="")
+        else:
+            for tool, date in find_config_bascules(args.repo_path).items():
+                print(f"{tool},{date}")
     elif args.command == "prs":
         output = Path(args.output)
         output.parent.mkdir(parents=True, exist_ok=True)
@@ -119,6 +134,14 @@ def main() -> None:
             records_output.parent.mkdir(parents=True, exist_ok=True)
             records.to_csv(records_output, index=False)
         print(json.dumps(report, ensure_ascii=True, indent=2))
+    elif args.command == "batch":
+        if load_dotenv:
+            load_dotenv(override=True)
+        run_batch(
+            args.manifest, args.workdir, args.rawdir, args.processeddir, args.since, args.until,
+            commit_identities=not args.no_commit_identities, max_pages=args.max_pages,
+            wait_for_rate_limit=args.wait_for_rate_limit,
+        )
 
 
 def _parse_date(value: str | None) -> datetime | None:

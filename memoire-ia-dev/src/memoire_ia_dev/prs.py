@@ -3,12 +3,27 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime
+import time
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
 from typing import Any, Callable
 
 import pandas as pd
 
 from .detection import COMMIT_RULES, Attribution
+
+
+class GitHubRateLimitError(RuntimeError):
+    """Raised when GitHub rejects a request because the API quota is exhausted."""
+
+    def __init__(self, reset_at: int | None = None) -> None:
+        self.reset_at = reset_at
+        super().__init__("GitHub API rate limit exhausted")
+
+    def wait_seconds(self) -> int:
+        if self.reset_at is None:
+            return 60
+        return max(1, self.reset_at - int(datetime.now(timezone.utc).timestamp()) + 1)
 
 
 # Anchored login patterns observed in the AIDev corpus on 2026-08-25.
@@ -124,13 +139,16 @@ def get_pull_requests(
     page = start_page
     pages_collected = 0
     while True:
-        response = requests.get(
+        response = _get_with_retries(
+            requests,
             f"https://api.github.com/repos/{owner}/{repo}/pulls",
-            headers=headers,
-            params={"state": "closed", "sort": "created", "direction": "desc", "per_page": 100, "page": page},
-            timeout=30,
+            headers,
+            {"state": "closed", "sort": "created", "direction": "desc", "per_page": 100, "page": page},
+            ignore_forbidden=True,
+            raise_on_rate_limit=True,
         )
-        response.raise_for_status()
+        if response is None:
+            return tag_commits_or_prs(rows), False, page
         batch = response.json()
         if not batch:
             return tag_commits_or_prs(rows), True, page
@@ -153,12 +171,21 @@ def get_pull_requests(
                 "created_at": pr.get("created_at"), "merged_at": pr.get("merged_at"),
                 "closed_at": pr.get("closed_at"), "merge_commit_sha": pr.get("merge_commit_sha"),
             })
-        tagged_page = tag_prs(pd.DataFrame(page_rows))
+        tagged_page = tag_prs(pd.DataFrame(page_rows, columns=[
+            "identifiant", "author_login", "committer_login", "author_type", "head_ref",
+            "performed_via_github_app", "title", "body", "labels", "created_at", "merged_at",
+            "closed_at", "merge_commit_sha",
+        ]))
         if include_commit_identities:
-            for index in tagged_page.index[tagged_page["outil"].isna()]:
-                committer_login = _find_agent_committer_login(
-                    requests, owner, repo, str(tagged_page.at[index, "identifiant"]), headers
+            candidates = tagged_page.index[tagged_page["outil"].isna()]
+            with ThreadPoolExecutor(max_workers=3) as executor:
+                lookups = executor.map(
+                    lambda index: _find_agent_committer_login(
+                        requests, owner, repo, str(tagged_page.at[index, "identifiant"]), headers
+                    ),
+                    candidates,
                 )
+            for index, committer_login in zip(candidates, lookups):
                 if committer_login:
                     tagged_page.at[index, "committer_login"] = committer_login
             tagged_page = tag_prs(tagged_page)
@@ -172,6 +199,30 @@ def get_pull_requests(
             return tag_commits_or_prs(rows), True, page
         if max_pages and pages_collected >= max_pages:
             return tag_commits_or_prs(rows), False, page
+    return tag_commits_or_prs(rows), True, page
+
+def get_pull_request_total(owner: str, repo: str, token: str | None, since: str, until: str) -> int:
+    """Return GitHub's count of closed pull requests created in the date window."""
+    try:
+        import requests
+    except ImportError as error:
+        raise RuntimeError("Install collection dependencies with: pip install -e '.[collect]'") from error
+
+    headers = {"Accept": "application/vnd.github+json"}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    response = requests.get(
+        "https://api.github.com/search/issues",
+        headers=headers,
+        params={"q": f"repo:{owner}/{repo} is:pr is:closed created:{since}..{until}", "per_page": 1},
+        timeout=30,
+    )
+    response_headers = getattr(response, "headers", {})
+    if response.status_code == 403 and response_headers.get("x-ratelimit-remaining") == "0":
+        reset = response_headers.get("x-ratelimit-reset")
+        raise GitHubRateLimitError(int(reset)) if reset and reset.isdigit() else GitHubRateLimitError()
+    response.raise_for_status()
+    return int(response.json()["total_count"])
 
 
 def _parse_bound(value: str | None) -> datetime | None:
@@ -186,13 +237,15 @@ def _find_agent_committer_login(
     """Return a recognized agent committer from one otherwise unattributed PR."""
     page = 1
     while True:
-        response = requests.get(
+        response = _get_with_retries(
+            requests,
             f"https://api.github.com/repos/{owner}/{repo}/pulls/{pull_number}/commits",
-            headers=headers,
-            params={"per_page": 100, "page": page},
-            timeout=30,
+            headers,
+            {"per_page": 100, "page": page},
+            ignore_forbidden=True,
         )
-        response.raise_for_status()
+        if response is None:
+            return None
         commits = response.json()
         for commit in commits:
             login = str((commit.get("committer") or {}).get("login") or "").strip()
@@ -201,6 +254,41 @@ def _find_agent_committer_login(
         if len(commits) < 100:
             return None
         page += 1
+
+
+def _get_with_retries(
+    requests: Any,
+    url: str,
+    headers: dict[str, str],
+    params: dict[str, object],
+    ignore_forbidden: bool = False,
+    raise_on_rate_limit: bool = False,
+) -> Any | None:
+    """Retry transient server and connection failures without hiding client errors."""
+    for attempt in range(3):
+        try:
+            response = requests.get(url, headers=headers, params=params, timeout=30)
+            response_headers = getattr(response, "headers", {})
+            if response.status_code == 403 and raise_on_rate_limit and response_headers.get("x-ratelimit-remaining") == "0":
+                reset = response_headers.get("x-ratelimit-reset")
+                raise GitHubRateLimitError(int(reset)) if reset and reset.isdigit() else GitHubRateLimitError()
+            if response.status_code == 403 and ignore_forbidden:
+                return None
+            if response.status_code >= 500:
+                if attempt < 2:
+                    time.sleep(1 << attempt)
+                    continue
+                return None
+            response.raise_for_status()
+            return response
+        except GitHubRateLimitError:
+            raise
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+            if attempt < 2:
+                time.sleep(1 << attempt)
+                continue
+            return None
+    return None
 
 
 def tag_commits_or_prs(rows: list[dict[str, object]]) -> pd.DataFrame:

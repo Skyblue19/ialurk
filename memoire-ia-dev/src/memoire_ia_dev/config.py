@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import re
 from pathlib import Path
 
 
@@ -15,6 +16,16 @@ CONFIG_FILES: dict[str, tuple[str, ...]] = {
     "codex": ("AGENTS.md",),
     "devin": (".devin.yaml",),
 }
+
+REJECTION_MARKERS = re.compile(
+    r"\b(?:do not review|do not request|decline|discouraged?|not to request|opt[- ]?out|disable[sd]?)\b",
+    re.I,
+)
+
+
+def classify_config_file_content(content: str) -> str:
+    """Classify a configuration file using explicit rejection language only."""
+    return "rejet" if REJECTION_MARKERS.search(content) else "adoption"
 
 
 def load_repositories(path: str | Path) -> list[dict[str, str]]:

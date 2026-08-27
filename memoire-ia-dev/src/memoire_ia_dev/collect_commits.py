@@ -8,7 +8,7 @@ import subprocess
 
 import pandas as pd
 
-from .config import CONFIG_FILES
+from .config import CONFIG_FILES, classify_config_file_content
 from .detection import tag_commits
 
 
@@ -65,25 +65,55 @@ def extract_commits_fast(repo_path: str | Path, since: datetime | None = None, t
         return tag_commits(result)
     result["date"] = pd.to_datetime(result["date"], utc=True)
     if since:
-        result = result.loc[result["date"] >= pd.Timestamp(since, tz="UTC")]
+        result = result.loc[result["date"] >= pd.to_datetime(since, utc=True)]
     if to:
-        result = result.loc[result["date"] <= pd.Timestamp(to, tz="UTC")]
+        result = result.loc[result["date"] <= pd.to_datetime(to, utc=True)]
     return tag_commits(result)
 
 
-def find_config_bascules(repo_path: str | Path) -> dict[str, str]:
-    """Find the earliest commit that added each known AI-tool configuration file."""
-    results: dict[str, str] = {}
+def find_config_bascule_details(repo_path: str | Path) -> pd.DataFrame:
+    """Inspect added configuration content and retain adoption/rejection status."""
+    rows: list[dict[str, str]] = []
     for tool, paths in CONFIG_FILES.items():
-        dates: list[str] = []
         for config_path in paths:
             completed = subprocess.run(
-                ["git", "-C", str(repo_path), "log", "--diff-filter=A", "--format=%aI", "--", config_path],
+                ["git", "-C", str(repo_path), "log", "--diff-filter=A", "--format=%H%x1f%aI", "--", config_path],
                 capture_output=True,
                 text=True,
                 check=True,
             )
-            dates.extend(line for line in completed.stdout.splitlines() if line)
-        if dates:
-            results[tool] = min(dates)
-    return results
+            for line in completed.stdout.splitlines():
+                if not line:
+                    continue
+                commit, date = line.split("\x1f", maxsplit=1)
+                content = _config_content_at_revision(repo_path, commit, config_path)
+                rows.append({
+                    "outil": tool, "chemin": config_path, "commit": commit, "date_bascule": date,
+                    "statut_config": classify_config_file_content(content),
+                })
+    if not rows:
+        return pd.DataFrame(columns=["outil", "chemin", "commit", "date_bascule", "statut_config"])
+    return pd.DataFrame(rows).sort_values("date_bascule").drop_duplicates("outil", keep="first").reset_index(drop=True)
+
+
+def _config_content_at_revision(repo_path: str | Path, commit: str, config_path: str) -> str:
+    """Read a tracked config file at its addition revision; directories have no blob."""
+    if config_path.endswith("/"):
+        listed = subprocess.run(
+            ["git", "-C", str(repo_path), "diff-tree", "--no-commit-id", "--name-only", "-r", commit],
+            capture_output=True, text=True, check=True,
+        )
+        paths = [path for path in listed.stdout.splitlines() if path.startswith(config_path)]
+        return "\n".join(_config_content_at_revision(repo_path, commit, path) for path in paths)
+    shown = subprocess.run(
+        ["git", "-C", str(repo_path), "show", f"{commit}:{config_path}"],
+        capture_output=True, text=True, encoding="utf-8", errors="replace",
+    )
+    return shown.stdout if shown.returncode == 0 else ""
+
+
+def find_config_bascules(repo_path: str | Path) -> dict[str, str]:
+    """Return earliest adoption dates; explicit rejections are not adoption bascules."""
+    details = find_config_bascule_details(repo_path)
+    adopted = details.loc[details["statut_config"].eq("adoption")]
+    return dict(zip(adopted["outil"], adopted["date_bascule"]))

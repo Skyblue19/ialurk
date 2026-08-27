@@ -1,2 +1,7 @@
 depot,url,date_bascule,source_date,langage_principal,notes
-devhitoshi/call-generator,https://github.com/devhitoshi/call-generator,,AIDev all_pull_request (validation pilot only),Unknown,Do not use a first AIDev PR as an adoption bascule without an independent source.
+microsoft/vscode,https://github.com/microsoft/vscode,2024-11-28,"git log --diff-filter=A -- .github/copilot-instructions.md, verifie manuellement",TypeScript,Cree 2015-11-13. Bascule config confirmee. Canal PR actif sur GitHub.
+home-assistant/core,https://github.com/home-assistant/core,2025-02-19,"git log --diff-filter=A -- copilot-instructions.md, verifie manuellement",Python,Cree 2013-09-17. AGENTS.md ajoute 2025-10-05/06 (bascule secondaire). Canal PR actif.
+vercel/next.js,https://github.com/vercel/next.js,2026-01-05,"git log --diff-filter=A -- CLAUDE.md/AGENTS.md, verifie manuellement",TypeScript,Cree 2016-10-05. ATTENTION: seulement ~7 mois de donnees apres a ce jour; verifier la puissance statistique avant de conclure.
+godotengine/godot,https://github.com/godotengine/godot,,Aucun signal detecte a ce jour (verification a refaire au moment de la collecte),C++,Cree ~2013-2014. Candidat temoin sans bascule connue; confirmer l'absence de fichier de config a la collecte.
+redis/redis,https://github.com/redis/redis,,Aucun signal detecte a ce jour (verification a refaire au moment de la collecte),C,Cree 2009-03-22. Candidat temoin sans bascule connue.
+django/django,https://github.com/django/django,,"copilot-instructions.md ajoute 2026-03-05 mais classe REJET (voir Tache 1), pas une bascule d'adoption",Python,Cree 2005-07-13. Ne pas utiliser comme bascule d'adoption.

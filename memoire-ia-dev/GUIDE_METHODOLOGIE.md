@@ -88,7 +88,7 @@ La commande `bascules` cherche la premiere date d'ajout d'un fichier de configur
 - `.cursorrules`, `.cursor/rules/`
 - `.aider.conf.yml`, `.replit`, `AGENTS.md`, `.devin.yaml`
 
-Cette date est une candidate au point de bascule. Elle doit etre documentee dans `config/repos.csv` et, idealement, triangulee avec une annonce publique ou une discussion du projet.
+Le contenu est lu a la revision de l'ajout. Un marqueur explicite de rejet (`do not review`, `do not request`, `decline`, `opt out`, `disable`, etc.) produit `statut_config = rejet`; ce cas est conserve pour l'audit mais n'est pas une bascule d'adoption. Sans marqueur de rejet, le statut est `adoption`. Cette classification est une regex deterministe, sans reseau ni LLM. Utiliser `bascules <clone> --details` pour exporter le statut, le commit et le chemin; la commande sans option ne retourne que les bascules d'adoption.
 
 ## 6. Procedure pour analyser un depot
 
@@ -116,6 +116,8 @@ Creer `.env` a partir de `.env.example`, ajouter le token, puis lancer :
 ```powershell
 .\.venv\Scripts\memoire-ia-dev.exe prs organisation depot data\raw\depot_prs.csv --since 2023-01-01 --until 2025-12-31
 ```
+
+Pour la collecte initiale de l'echantillon, activer `--commit-identities`. L'option consulte les commits uniquement pour les PR sans signal prealable, afin de rattraper les identites de committer telles que `cursoragent`. Elle augmente toutefois le nombre de requetes API et doit etre utilisee avec `--max-pages` et `--resume` sur les grands depots.
 
 Le CSV de PR conserve `head_ref`, le titre, le corps, les dates, le compte auteur, le type de preuve et le signal declencheur. Il faut conserver le fichier brut avant tout filtrage.
 
@@ -158,6 +160,8 @@ Les commits de merge sont exclus pour les metriques de taille. Le module `metric
 Pour l'evolution historique a partir de 2020, privilegier `build_quarterly_summary()` : il conserve assez de granularite pour voir une adoption progressive tout en restant plus stable qu'un comptage mensuel. Garder la meme granularite sur tous les depots et comparer commits et PR dans deux series distinctes.
 
 Les volumes de commits et de PR ne doivent pas etre fusionnes : ce sont deux canaux d'observation differents.
+
+Lorsque `build_annual_summary()` ou `build_quarterly_summary()` recoit les details de configuration, les colonnes `nb_configs_adoption` et `nb_configs_rejet` sont exportees separement. Un rejet ne contribue jamais a une bascule d'adoption ni a un compteur d'activite IA.
 
 ## 8. Validation contre AIDev
 
