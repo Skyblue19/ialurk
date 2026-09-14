@@ -1,0 +1,154 @@
+{
+  "detecteur": "v2",
+  "nombre_depots_attendu": 8,
+  "nombre_depots_testes": 8,
+  "statut_global": "reussi",
+  "prs_testees": 246767,
+  "detectees_v1": 3406,
+  "detectees_v2": 3412,
+  "nouvelles_v2": 6,
+  "depots": [
+    {
+      "depot": "microsoft/vscode",
+      "fichier": "microsoft_vscode_prs.csv",
+      "statut": "reussi",
+      "erreurs": [],
+      "prs": 54888,
+      "detectees_v1": 2458,
+      "detectees_v2": 2458,
+      "perdues_depuis_v1": 0,
+      "nouvelles_v2": 0,
+      "details_nouvelles_v2": []
+    },
+    {
+      "depot": "home-assistant/core",
+      "fichier": "home-assistant_core_prs.csv",
+      "statut": "reussi",
+      "erreurs": [],
+      "prs": 83434,
+      "detectees_v1": 356,
+      "detectees_v2": 358,
+      "perdues_depuis_v1": 0,
+      "nouvelles_v2": 2,
+      "details_nouvelles_v2": [
+        {
+          "identifiant": "171360",
+          "outil": "cursor",
+          "type_preuve": "auto_declaration",
+          "signal_attribution": "title_or_body",
+          "title": "Move system_bridge service registration to async_setup"
+        },
+        {
+          "identifiant": "171356",
+          "outil": "cursor",
+          "type_preuve": "auto_declaration",
+          "signal_attribution": "title_or_body",
+          "title": "Fix swallowed exceptions in lyric climate action handlers"
+        }
+      ]
+    },
+    {
+      "depot": "vercel/next.js",
+      "fichier": "vercel_next.js_prs.csv",
+      "statut": "reussi",
+      "erreurs": [],
+      "prs": 31682,
+      "detectees_v1": 320,
+      "detectees_v2": 321,
+      "perdues_depuis_v1": 0,
+      "nouvelles_v2": 1,
+      "details_nouvelles_v2": [
+        {
+          "identifiant": "94839",
+          "outil": "codex",
+          "type_preuve": "auto_declaration",
+          "signal_attribution": "title_or_body",
+          "title": "test: harness for running nextjs tests against vc dev"
+        }
+      ]
+    },
+    {
+      "depot": "godotengine/godot",
+      "fichier": "godotengine_godot_prs.csv",
+      "statut": "reussi",
+      "erreurs": [],
+      "prs": 37507,
+      "detectees_v1": 18,
+      "detectees_v2": 18,
+      "perdues_depuis_v1": 0,
+      "nouvelles_v2": 0,
+      "details_nouvelles_v2": []
+    },
+    {
+      "depot": "redis/redis",
+      "fichier": "redis_redis_prs.csv",
+      "statut": "reussi",
+      "erreurs": [],
+      "prs": 4670,
+      "detectees_v1": 16,
+      "detectees_v2": 16,
+      "perdues_depuis_v1": 0,
+      "nouvelles_v2": 0,
+      "details_nouvelles_v2": []
+    },
+    {
+      "depot": "django/django",
+      "fichier": "django_django_prs.csv",
+      "statut": "reussi",
+      "erreurs": [],
+      "prs": 8279,
+      "detectees_v1": 13,
+      "detectees_v2": 15,
+      "perdues_depuis_v1": 0,
+      "nouvelles_v2": 2,
+      "details_nouvelles_v2": [
+        {
+          "identifiant": "20713",
+          "outil": "codex",
+          "type_preuve": "auto_declaration",
+          "signal_attribution": "title_or_body",
+          "title": "Added Common Table Expressions (CTE) support"
+        },
+        {
+          "identifiant": "20655",
+          "outil": "codex",
+          "type_preuve": "auto_declaration",
+          "signal_attribution": "title_or_body",
+          "title": "Fixed #28919 -- Added Common Table Expressions (CTE) support."
+        }
+      ]
+    },
+    {
+      "depot": "ppy/osu",
+      "fichier": "osu_prs_2020_2026.csv",
+      "statut": "reussi",
+      "erreurs": [],
+      "prs": 10077,
+      "detectees_v1": 0,
+      "detectees_v2": 0,
+      "perdues_depuis_v1": 0,
+      "nouvelles_v2": 0,
+      "details_nouvelles_v2": []
+    },
+    {
+      "depot": "oven-sh/bun",
+      "fichier": "bun_prs_2020_2026.csv",
+      "statut": "reussi",
+      "erreurs": [],
+      "prs": 16230,
+      "detectees_v1": 225,
+      "detectees_v2": 226,
+      "perdues_depuis_v1": 0,
+      "nouvelles_v2": 1,
+      "details_nouvelles_v2": [
+        {
+          "identifiant": "29776",
+          "outil": "codex",
+          "type_preuve": "auto_declaration",
+          "signal_attribution": "title_or_body",
+          "title": "[codex] Fix S3 arrayBuffer native buffer leak"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "start": "2020-06-01",
+  "end": "2026-08-25",
+  "repositories": {
+    "microsoft/vscode": {
+      "prefix": "microsoft_vscode",
+      "bascule": "2024-11-28",
+      "groupe": "adoption",
+      "echantillon": "principal"
+    },
+    "home-assistant/core": {
+      "prefix": "home-assistant_core",
+      "bascule": "2025-02-19",
+      "groupe": "adoption",
+      "echantillon": "principal"
+    },
+    "vercel/next.js": {
+      "prefix": "vercel_next.js",
+      "bascule": "2026-01-05",
+      "groupe": "adoption",
+      "echantillon": "principal"
+    },
+    "godotengine/godot": {
+      "prefix": "godotengine_godot",
+      "bascule": null,
+      "groupe": "temoin",
+      "echantillon": "principal"
+    },
+    "redis/redis": {
+      "prefix": "redis_redis",
+      "bascule": null,
+      "groupe": "temoin",
+      "echantillon": "principal"
+    },
+    "django/django": {
+      "prefix": "django_django",
+      "bascule": null,
+      "groupe": "temoin",
+      "echantillon": "principal"
+    },
+    "ppy/osu": {
+      "prefix": "osu",
+      "commits_file": "osu_commits_2020_2026.csv",
+      "prs_file": "osu_prs_2020_2026.csv",
+      "bascule": null,
+      "groupe": "exploratoire",
+      "echantillon": "exploratoire"
+    },
+    "oven-sh/bun": {
+      "prefix": "bun",
+      "commits_file": "bun_commits_2020_2026.csv",
+      "prs_file": "bun_prs_2020_2026.csv",
+      "bascule": null,
+      "groupe": "exploratoire",
+      "echantillon": "exploratoire"
+    }
+  }
+}

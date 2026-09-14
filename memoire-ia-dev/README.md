@@ -85,10 +85,10 @@ Codex n'a aucun compte dedie : les logins contenant `codex` sont des humains. Sa
 Pour executer le test sur **toute la table AIDev** et enregistrer les resultats :
 
 ```powershell
-.\.venv\Scripts\memoire-ia-dev.exe eval-aidev data\processed\aidev_full_report.json --records-output data\processed\aidev_full_records.csv
+.\.venv\Scripts\memoire-ia-dev.exe eval-aidev data\processed\aidev_full_report.json --records-output data\processed\aidev_full_records.csv --detector-version v2 --comparison-output data\processed\aidev_detector_comparison.json
 ```
 
-Le rapport JSON contient `n_reference`, `n_detecte`, `rappel_global` et `rappel_par_outil`. AIDev etant un corpus de cas positifs, `precision` reste volontairement `null`: il faudrait un echantillon de PR GitHub non presentes dans AIDev pour calculer les faux positifs. Le CSV conserve le resultat ligne par ligne (`number`, `agent`, `detected`) pour auditer les desaccords.
+Le rapport JSON contient `n_reference`, `n_detecte`, `rappel_global`, `rappel_par_outil` et la version du detecteur. Le rapport comparatif conserve V1 et V2. AIDev etant un corpus de cas positifs, `precision` reste volontairement `null`: il faudrait un echantillon de PR GitHub non presentes dans AIDev pour calculer les faux positifs. Le CSV conserve le resultat ligne par ligne (`number`, `agent`, `detected`) pour auditer les desaccords.
 
 ## Analyse
 

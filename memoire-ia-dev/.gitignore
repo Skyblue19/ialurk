@@ -31,6 +31,9 @@ data/raw/*
 data/processed/*
 !data/processed/.gitkeep
 
+# Large external source archive (download locally when needed)
+data/external/agenticflict.tar.gz
+
 # Logs and operating-system files
 *.log
 .DS_Store

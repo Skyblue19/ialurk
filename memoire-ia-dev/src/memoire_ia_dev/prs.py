@@ -6,7 +6,7 @@ import re
 import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
-from typing import Any, Callable
+from typing import Any, Callable, Literal
 
 import pandas as pd
 
@@ -45,11 +45,39 @@ AGENT_BRANCH_RULES: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("copilot", re.compile(r"^copilot/", re.I)),
 )
 
-# Task links inserted by the agent into the PR body; measured on the AIDev corpus.
-AGENT_LINK_RULES: tuple[tuple[str, re.Pattern[str]], ...] = (
+# Frozen V1 task links, retained for reproducible before/after comparisons.
+AGENT_LINK_RULES_V1: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("codex", re.compile(r"https?://chatgpt\.com/codex", re.I)),
     ("cursor", re.compile(r"https?://cursor\.com/(agents|bc)", re.I)),
 )
+
+# V2 task links and explicit declarations measured on the AIDev corpus.
+AGENT_LINK_RULES_V2: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("codex", re.compile(
+        r"https?://chatgpt\.com/(?:codex(?:[/?#]|$)|s/cd_[a-z0-9]+(?:[/?#]|$)|"
+        r"tasks/task_e_[a-z0-9]+(?:[/?#]|$))",
+        re.I,
+    )),
+    ("cursor", re.compile(
+        r"https?://(?:www\.)?cursor\.com/(?:agents|bc|background-agent)(?:[/?#]|$)",
+        re.I,
+    )),
+)
+
+AGENT_DECLARATION_RULES_V2: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("cursor", re.compile(
+        r"\b(?:generated|created|implemented|written|made)\s+(?:with|by)\s+(?:the\s+)?"
+        r"cursor(?:\s+(?:agent|ai|background\s+composer))?\b",
+        re.I,
+    )),
+    ("codex", re.compile(
+        r"\b(?:generated|created|implemented|written|made)\s+(?:with|by)\s+"
+        r"(?:openai\s+)?codex(?:\s+(?:cli|agent))?\b",
+        re.I,
+    )),
+)
+
+DetectorVersion = Literal["v1", "v2"]
 
 # Automation accounts that are not AI coding agents; excluded to avoid false positives.
 NON_AI_AUTOMATION = re.compile(
@@ -66,8 +94,13 @@ def _match_agent_login(login: str) -> str | None:
     return None
 
 
-def detect_pr_attribution(record: dict[str, Any] | pd.Series) -> Attribution | None:
+def detect_pr_attribution(
+    record: dict[str, Any] | pd.Series, version: DetectorVersion = "v2"
+) -> Attribution | None:
     """Detect PR signals while keeping structural and textual proof separate."""
+    if version not in ("v1", "v2"):
+        raise ValueError(f"Unsupported detector version: {version}")
+
     author_login = str(record.get("author_login", "") or "").strip()
     committer_login = str(record.get("committer_login", "") or "").strip()
 
@@ -87,19 +120,24 @@ def detect_pr_attribution(record: dict[str, Any] | pd.Series) -> Attribution | N
             return Attribution(tool, "convention_branche", "head_ref")
 
     text = f"{record.get('title', '') or ''}\n{record.get('body', '') or ''}"
-    for tool, pattern in AGENT_LINK_RULES:
+    link_rules = AGENT_LINK_RULES_V1 if version == "v1" else AGENT_LINK_RULES_V2
+    for tool, pattern in link_rules:
         if pattern.search(text):
             return Attribution(tool, "auto_declaration", "lien_agent")
+    if version == "v2":
+        for tool, pattern in AGENT_DECLARATION_RULES_V2:
+            if pattern.search(text):
+                return Attribution(tool, "auto_declaration", "title_or_body")
     for tool, _, field, pattern in COMMIT_RULES:
         if field == "message" and pattern.search(text):
             return Attribution(tool, "auto_declaration", "title_or_body")
     return None
 
 
-def tag_prs(prs: pd.DataFrame) -> pd.DataFrame:
+def tag_prs(prs: pd.DataFrame, version: DetectorVersion = "v2") -> pd.DataFrame:
     """Add observable attribution columns to PR metadata."""
     result = prs.copy()
-    detected = result.apply(detect_pr_attribution, axis=1)
+    detected = result.apply(lambda row: detect_pr_attribution(row, version=version), axis=1)
     result["outil"] = detected.map(lambda item: item.tool if item else None)
     result["type_preuve"] = detected.map(lambda item: item.evidence_type if item else None)
     result["signal_attribution"] = detected.map(lambda item: item.signal if item else None)
@@ -269,7 +307,7 @@ def _get_with_retries(
         try:
             response = requests.get(url, headers=headers, params=params, timeout=30)
             response_headers = getattr(response, "headers", {})
-            if response.status_code == 403 and raise_on_rate_limit and response_headers.get("x-ratelimit-remaining") == "0":
+            if response.status_code == 403 and raise_on_rate_limit:
                 reset = response_headers.get("x-ratelimit-reset")
                 raise GitHubRateLimitError(int(reset)) if reset and reset.isdigit() else GitHubRateLimitError()
             if response.status_code == 403 and ignore_forbidden:

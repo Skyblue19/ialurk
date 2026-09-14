@@ -51,6 +51,8 @@ def main() -> None:
     aidev_parser = commands.add_parser("eval-aidev", help="Evaluate PR detection over the complete AIDev positive corpus.")
     aidev_parser.add_argument("output", help="JSON report path")
     aidev_parser.add_argument("--records-output", help="Optional CSV path for row-level evaluation records")
+    aidev_parser.add_argument("--detector-version", choices=("v1", "v2"), default="v2")
+    aidev_parser.add_argument("--comparison-output", help="Optional JSON report comparing V1 and V2")
     batch_parser = commands.add_parser("batch", help="Run the manifest-driven collection and analysis workflow.")
     batch_parser.add_argument("manifest", help="CSV repository manifest")
     batch_parser.add_argument("--workdir", default=".work", help="Directory for local clones")
@@ -127,12 +129,23 @@ def main() -> None:
     elif args.command == "eval-aidev":
         output = Path(args.output)
         output.parent.mkdir(parents=True, exist_ok=True)
-        report, records = evaluate_aidev_full(load_aidev(), load_aidev("pr_commits"))
+        reference = load_aidev()
+        commits = load_aidev("pr_commits")
+        report, records = evaluate_aidev_full(reference, commits, args.detector_version)
         output.write_text(json.dumps(report, ensure_ascii=True, indent=2), encoding="utf-8")
         if args.records_output:
             records_output = Path(args.records_output)
             records_output.parent.mkdir(parents=True, exist_ok=True)
             records.to_csv(records_output, index=False)
+        if args.comparison_output:
+            comparison_output = Path(args.comparison_output)
+            comparison_output.parent.mkdir(parents=True, exist_ok=True)
+            other_version = "v1" if args.detector_version == "v2" else "v2"
+            other_report, _ = evaluate_aidev_full(reference, commits, other_version)
+            comparison = {args.detector_version: report, other_version: other_report}
+            comparison_output.write_text(
+                json.dumps(comparison, ensure_ascii=True, indent=2), encoding="utf-8",
+            )
         print(json.dumps(report, ensure_ascii=True, indent=2))
     elif args.command == "batch":
         if load_dotenv:

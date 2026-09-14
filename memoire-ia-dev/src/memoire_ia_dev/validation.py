@@ -2,12 +2,20 @@
 
 from __future__ import annotations
 
+import json
+import re
+import tarfile
+import zipfile
+from pathlib import Path
 from typing import Iterable
 from urllib.parse import urlparse
 
 import pandas as pd
 
-from .prs import _match_agent_login, detect_pr_attribution
+from .prs import DetectorVersion, _match_agent_login, detect_pr_attribution
+
+
+SHARED_CHATGPT_LINK = re.compile(r"https?://(?:chat\.openai|chatgpt)\.com/share/", re.I)
 
 
 def load_aidev(config: str = "all_pull_request", split: str = "train") -> pd.DataFrame:
@@ -64,7 +72,11 @@ def compare_to_reference(
     }
 
 
-def evaluate_aidev_full(reference: pd.DataFrame, commits: pd.DataFrame | None = None) -> tuple[dict[str, object], pd.DataFrame]:
+def evaluate_aidev_full(
+    reference: pd.DataFrame,
+    commits: pd.DataFrame | None = None,
+    version: DetectorVersion = "v2",
+) -> tuple[dict[str, object], pd.DataFrame]:
     """Evaluate the PR detector against every positive row in an AIDev table.
 
     AIDev is a positive reference corpus. Therefore this function reports recall,
@@ -87,7 +99,7 @@ def evaluate_aidev_full(reference: pd.DataFrame, commits: pd.DataFrame | None = 
         lambda row: detect_pr_attribution({
             "author_login": row["user"], "committer_login": row["committer_login"],
             "title": row["title"], "body": row["body"],
-        }) is not None,
+        }, version=version) is not None,
         axis=1,
     )
     records["outil_reference"] = records["agent"]
@@ -102,6 +114,7 @@ def evaluate_aidev_full(reference: pd.DataFrame, commits: pd.DataFrame | None = 
     by_agent["rappel_si_donnees_commit"] = by_agent["outil_reference"].map(conditional)
     report: dict[str, object] = {
         "dataset": "hao-li/AIDev/all_pull_request",
+        "detecteur": version,
         "signal_committer": commits is not None,
         "n_reference": int(len(records)),
         "n_detecte": int(records["detected"].sum()),
@@ -111,6 +124,117 @@ def evaluate_aidev_full(reference: pd.DataFrame, commits: pd.DataFrame | None = 
         "rappel_par_outil": by_agent.to_dict("records"),
     }
     return report, records
+
+
+def load_patchtrack_pull_requests(archive: str | Path, member: str) -> pd.DataFrame:
+    """Load and normalize one DevGPT/PatchTrack PR-sharing snapshot."""
+    with zipfile.ZipFile(archive) as package, package.open(member) as source:
+        payload = json.load(source)
+    sources = payload.get("Sources")
+    if not isinstance(sources, list):
+        raise ValueError(f"PatchTrack member {member!r} has no Sources list")
+
+    rows = []
+    for source in sources:
+        sharing_locations = sorted({
+            str(sharing.get("Mention", {}).get("MentionedProperty", "unknown")).lower()
+            for sharing in source.get("ChatgptSharing", [])
+        })
+        rows.append({
+            "url": source.get("URL"),
+            "depot": source.get("RepoName"),
+            "identifiant": str(source.get("Number", "")),
+            "author_login": source.get("Author"),
+            "title": source.get("Title") or "",
+            "body": source.get("Body") or "",
+            "sharing_locations": sharing_locations,
+        })
+    return pd.DataFrame(rows)
+
+
+def evaluate_patchtrack(
+    reference: pd.DataFrame, dataset: str, version: DetectorVersion = "v2",
+) -> tuple[dict[str, object], pd.DataFrame]:
+    """Measure frozen-detector recall and generic shared-link coverage."""
+    required = {"url", "identifiant", "author_login", "title", "body", "sharing_locations"}
+    missing = required - set(reference.columns)
+    if missing:
+        raise ValueError(f"PatchTrack table is missing required columns: {sorted(missing)}")
+
+    records = reference.copy()
+    records["detected"] = records.apply(
+        lambda row: detect_pr_attribution(row, version=version) is not None, axis=1,
+    )
+    visible_text = records["title"].fillna("") + "\n" + records["body"].fillna("")
+    records["shared_link_in_title_or_body"] = visible_text.str.contains(SHARED_CHATGPT_LINK)
+    location_counts: dict[str, int] = {}
+    for locations in records["sharing_locations"]:
+        for location in locations:
+            location_counts[location] = location_counts.get(location, 0) + 1
+
+    report: dict[str, object] = {
+        "dataset": dataset,
+        "detecteur": version,
+        "n_reference": int(len(records)),
+        "n_detecte": int(records["detected"].sum()),
+        "rappel_detecteur_gele": float(records["detected"].mean()) if len(records) else None,
+        "n_lien_partage_titre_ou_corps": int(records["shared_link_in_title_or_body"].sum()),
+        "couverture_lien_partage_titre_ou_corps": (
+            float(records["shared_link_in_title_or_body"].mean()) if len(records) else None
+        ),
+        "emplacements_mentions": dict(sorted(location_counts.items())),
+        "precision": None,
+        "precision_interpretation": "Non calculable: le corpus ne contient que des PR avec partage ChatGPT.",
+    }
+    return report, records
+
+
+def audit_test_coverage_package(archive: str | Path) -> dict[str, object]:
+    """Summarize labels in the Test Coverage package, whose PR text is absent."""
+    prefix = "replication-package/data/test_detection/"
+    members = {
+        "human": prefix + "human_prs_test_detection.csv",
+        "ai_only": prefix + "ai_only_prs_test_detection.csv",
+        "coauthor": prefix + "coauthor_prs_test_detection.csv",
+    }
+    with zipfile.ZipFile(archive) as package:
+        tables = {label: pd.read_csv(package.open(member)) for label, member in members.items()}
+    urls = {label: set(table["html_url"].dropna()) for label, table in tables.items()}
+    return {
+        "dataset": "MSR 2026 Test Coverage replication package",
+        "n_par_label": {label: int(len(table)) for label, table in tables.items()},
+        "n_urls_uniques": {label: len(values) for label, values in urls.items()},
+        "chevauchement_ai_only_coauthor": len(urls["ai_only"] & urls["coauthor"]),
+        "chevauchement_positifs_humains": len((urls["ai_only"] | urls["coauthor"]) & urls["human"]),
+        "agents": _agent_counts(pd.concat([tables["ai_only"], tables["coauthor"]], ignore_index=True)),
+        "detecteur_testable_hors_ligne": False,
+        "raison": "Le paquet ne contient ni titre, ni corps, ni auteur, ni branche de PR.",
+    }
+
+
+def audit_agenticflict_package(archive: str | Path) -> tuple[dict[str, object], pd.DataFrame]:
+    """Summarize AgenticFlict labels and identifiers without claiming detector recall."""
+    member = "data/clean/agenticflict_pr_clean.csv"
+    with tarfile.open(archive, "r:gz") as package:
+        source = package.extractfile(member)
+        if source is None:
+            raise ValueError(f"AgenticFlict archive has no {member}")
+        records = pd.read_csv(source)
+    return {
+        "dataset": "AgenticFlict",
+        "n_lignes": int(len(records)),
+        "n_pr_uniques": int(records["pr_key"].nunique()),
+        "n_depots": int(records["repo_full_name"].nunique()),
+        "agents": _agent_counts(records),
+        "detecteur_testable_hors_ligne": False,
+        "raison": "Le paquet ne contient ni titre, ni corps, ni auteur, ni branche de PR.",
+    }, records
+
+
+def _agent_counts(records: pd.DataFrame) -> dict[str, int]:
+    if "agent" not in records:
+        return {}
+    return {str(agent): int(count) for agent, count in records["agent"].value_counts().sort_index().items()}
 
 
 def _committer_lookup(reference: pd.DataFrame, commits: pd.DataFrame | None) -> pd.Series:

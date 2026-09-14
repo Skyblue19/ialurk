@@ -118,7 +118,7 @@ def _collect_prs(owner, repo, output, since, until, token, commit_identities, ma
             "commit_identities": commit_identities, "next_page": next_page, "expected_total": expected_total,
         }, ensure_ascii=True, indent=2), encoding="utf-8")
         percent = min(100, int(existing_count / expected_total * 100)) if expected_total else 100
-        progress(f"[{index}/{total}] {name} | PR page {next_page - 1} | progression PR {percent}% | {existing_count}/{expected_total} PR")
+        progress(f"[{index}/{total}] {name} | PR page {next_page - 1} | {_progress_bar(percent)} {percent:3d}% | {existing_count}/{expected_total} PR")
 
     _, complete, _ = get_pull_requests(
         owner, repo, token, since, until, start_page, max_pages, save_page, include_commit_identities=commit_identities,
@@ -130,6 +130,11 @@ def _collect_prs(owner, repo, output, since, until, token, commit_identities, ma
 
 def _completion_marker(processed_path: Path) -> Path:
     return processed_path / ".batch-complete.json"
+
+
+def _progress_bar(percent: int, width: int = 20) -> str:
+    filled = min(width, max(0, percent * width // 100))
+    return f"[{'#' * filled}{'.' * (width - filled)}]"
 
 
 def _is_repository_complete(

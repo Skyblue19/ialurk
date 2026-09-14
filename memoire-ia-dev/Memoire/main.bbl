@@ -1,0 +1,793 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.2 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nyt/global//global/global}
+    \entry{barke2023grounded}{article}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=9745b502d2e25f22874af7b3b56247ea}{%
+           family={Barke},
+           familyi={B\bibinitperiod},
+           given={Shraddha},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=3523d7dc47b20426961988db942ecbf4}{%
+           family={James},
+           familyi={J\bibinitperiod},
+           given={Michael\bibnamedelima B.},
+           giveni={M\bibinitperiod\bibinitdelim B\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=201b7a8216bc052323c8b864acace759}{%
+           family={Polikarpova},
+           familyi={P\bibinitperiod},
+           given={Nadia},
+           giveni={N\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{bbe0a3d9d837de92a81fd0395ee995a1}
+      \strng{fullhash}{66548c6ea34ca3a6627a27ccd87d0fdb}
+      \strng{bibnamehash}{66548c6ea34ca3a6627a27ccd87d0fdb}
+      \strng{authorbibnamehash}{66548c6ea34ca3a6627a27ccd87d0fdb}
+      \strng{authornamehash}{bbe0a3d9d837de92a81fd0395ee995a1}
+      \strng{authorfullhash}{66548c6ea34ca3a6627a27ccd87d0fdb}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Proceedings of the ACM on Programming Languages}
+      \field{number}{OOPSLA1}
+      \field{title}{Grounded Copilot: How Programmers Interact with Code-Generating Models}
+      \field{volume}{7}
+      \field{year}{2023}
+      \field{pages}{85\bibrangedash 111}
+      \range{pages}{27}
+      \verb{doi}
+      \verb 10.1145/3586030
+      \endverb
+    \endentry
+    \entry{becker2025productivity}{article}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=77249691afd47d29da8ace361cd29e0d}{%
+           family={Becker},
+           familyi={B\bibinitperiod},
+           given={Joel},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=b2670ccbe30efddedfbdb4a614bc1c20}{%
+           family={Rush},
+           familyi={R\bibinitperiod},
+           given={Nate},
+           giveni={N\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=bfc26705b4cc1ed9f45e89aa6a9b7b40}{%
+           family={Barnes},
+           familyi={B\bibinitperiod},
+           given={Elizabeth},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=571ea7eeb54fbe051676530e45f5c476}{%
+           family={Rein},
+           familyi={R\bibinitperiod},
+           given={David},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{ea9522881eac02de9542d6edb7ae10e6}
+      \strng{fullhash}{5ac1ea0ceeebf1520917ed857a816d83}
+      \strng{bibnamehash}{5ac1ea0ceeebf1520917ed857a816d83}
+      \strng{authorbibnamehash}{5ac1ea0ceeebf1520917ed857a816d83}
+      \strng{authornamehash}{ea9522881eac02de9542d6edb7ae10e6}
+      \strng{authorfullhash}{5ac1ea0ceeebf1520917ed857a816d83}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{arXiv preprint arXiv:2507.09089}
+      \field{title}{Measuring the Impact of Early-2025 AI on Experienced Open-Source Developer Productivity}
+      \field{year}{2025}
+      \verb{doi}
+      \verb 10.48550/arXiv.2507.09089
+      \endverb
+    \endentry
+    \entry{forsgren2021space}{article}{}
+      \name{author}{6}{}{%
+        {{un=0,uniquepart=base,hash=0dc9ac8a967e13c60fcfaedde74976f2}{%
+           family={Forsgren},
+           familyi={F\bibinitperiod},
+           given={Nicole},
+           giveni={N\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=d88bfec92aef818de9532a68531f7f5c}{%
+           family={Storey},
+           familyi={S\bibinitperiod},
+           given={Margaret-Anne},
+           giveni={M\bibinithyphendelim A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=24e8cd7be1c3aeccfe0f3675bcbaa524}{%
+           family={Maddila},
+           familyi={M\bibinitperiod},
+           given={Chandra},
+           giveni={C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=9bfbc841af43915c12169734f59a4e7b}{%
+           family={Zimmermann},
+           familyi={Z\bibinitperiod},
+           given={Thomas},
+           giveni={T\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=608e48ba29e6f2fe39680f27de033fe0}{%
+           family={Houck},
+           familyi={H\bibinitperiod},
+           given={Brian},
+           giveni={B\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=60abb38f81bcb956a22a079a0171cd9c}{%
+           family={Butler},
+           familyi={B\bibinitperiod},
+           given={Jenna},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{6182ff2ce3d65afe566932add04e4d0a}
+      \strng{fullhash}{bd5c69cb5a24df1ef12bd5623144fcc6}
+      \strng{bibnamehash}{bd5c69cb5a24df1ef12bd5623144fcc6}
+      \strng{authorbibnamehash}{bd5c69cb5a24df1ef12bd5623144fcc6}
+      \strng{authornamehash}{6182ff2ce3d65afe566932add04e4d0a}
+      \strng{authorfullhash}{bd5c69cb5a24df1ef12bd5623144fcc6}
+      \field{sortinit}{F}
+      \field{sortinithash}{2638baaa20439f1b5a8f80c6c08a13b4}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{ACM Queue}
+      \field{number}{1}
+      \field{title}{The SPACE of Developer Productivity: There's More to It Than You Think}
+      \field{volume}{19}
+      \field{year}{2021}
+      \field{pages}{20\bibrangedash 48}
+      \range{pages}{29}
+      \verb{doi}
+      \verb 10.1145/3454122.3454124
+      \endverb
+    \endentry
+    \entry{fu2025weaknesses}{article}{}
+      \name{author}{7}{}{%
+        {{un=0,uniquepart=base,hash=494c7af24413ba2a9d5838b7d5d72ee8}{%
+           family={Fu},
+           familyi={F\bibinitperiod},
+           given={Yujia},
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=41658c7f1126a9a84da600b357c5ceb5}{%
+           family={Liang},
+           familyi={L\bibinitperiod},
+           given={Peng},
+           giveni={P\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=b4c621ee6d88ea5901dc542a2ab69fd1}{%
+           family={Tahir},
+           familyi={T\bibinitperiod},
+           given={Amjed},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=23f2c1628c77e25597f0ac5f01b9f398}{%
+           family={Li},
+           familyi={L\bibinitperiod},
+           given={Zengyang},
+           giveni={Z\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=2463e3ddc010ccd007e782d30714ec00}{%
+           family={Shahin},
+           familyi={S\bibinitperiod},
+           given={Mojtaba},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=2acbd5a946ae26877ce6528966a85d0c}{%
+           family={Yu},
+           familyi={Y\bibinitperiod},
+           given={Jiaxin},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=a59c6fcb28eff75312eba2177e2804e2}{%
+           family={Chen},
+           familyi={C\bibinitperiod},
+           given={Jinfu},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{9f1fb7b1c9a32df2f008bf663f161cc7}
+      \strng{fullhash}{d3d6d9318fc878a30b4e70c3fa158d4c}
+      \strng{bibnamehash}{d3d6d9318fc878a30b4e70c3fa158d4c}
+      \strng{authorbibnamehash}{d3d6d9318fc878a30b4e70c3fa158d4c}
+      \strng{authornamehash}{9f1fb7b1c9a32df2f008bf663f161cc7}
+      \strng{authorfullhash}{d3d6d9318fc878a30b4e70c3fa158d4c}
+      \field{sortinit}{F}
+      \field{sortinithash}{2638baaa20439f1b5a8f80c6c08a13b4}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{ACM Transactions on Software Engineering and Methodology}
+      \field{note}{Prépublication acceptée}
+      \field{title}{Security Weaknesses of Copilot-Generated Code in GitHub Projects: An Empirical Study}
+      \field{year}{2025}
+      \verb{doi}
+      \verb 10.48550/arXiv.2310.02059
+      \endverb
+    \endentry
+    \entry{hou2024slr}{article}{}
+      \name{author}{10}{}{%
+        {{un=0,uniquepart=base,hash=bbe203ccb474a175f598679a28e5081b}{%
+           family={Hou},
+           familyi={H\bibinitperiod},
+           given={Xinyi},
+           giveni={X\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=14e6e67151fcd0f9de7104ca4abbe2dc}{%
+           family={Zhao},
+           familyi={Z\bibinitperiod},
+           given={Yanjie},
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=4ea6157adaa214ea9a0734bb53dd8492}{%
+           family={Liu},
+           familyi={L\bibinitperiod},
+           given={Yue},
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=9ff4b29547ca71e4559aa812d21fe1f0}{%
+           family={Yang},
+           familyi={Y\bibinitperiod},
+           given={Zhou},
+           giveni={Z\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=074419ff4edf5e9aaad244a32f534697}{%
+           family={Wang},
+           familyi={W\bibinitperiod},
+           given={Kailong},
+           giveni={K\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=502de95c3193f5c283f4ef712520a97e}{%
+           family={Li},
+           familyi={L\bibinitperiod},
+           given={Li},
+           giveni={L\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=7d405dc8c3ba97bdd21d7ea41fcd9b3b}{%
+           family={Luo},
+           familyi={L\bibinitperiod},
+           given={Xiapu},
+           giveni={X\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=cac8ebdbf2f8a8f2b7f49f6e737c2649}{%
+           family={Lo},
+           familyi={L\bibinitperiod},
+           given={David},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=0e8d3c2397e6ae67ffff6fc7eac28615}{%
+           family={Grundy},
+           familyi={G\bibinitperiod},
+           given={John},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=44ddd1947297940fae36faf60cfdc356}{%
+           family={Wang},
+           familyi={W\bibinitperiod},
+           given={Haoyu},
+           giveni={H\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{97c844757bc1ced6ee04f333c8270232}
+      \strng{fullhash}{649f1fd0f05fbf441e02369b14fda315}
+      \strng{bibnamehash}{649f1fd0f05fbf441e02369b14fda315}
+      \strng{authorbibnamehash}{649f1fd0f05fbf441e02369b14fda315}
+      \strng{authornamehash}{97c844757bc1ced6ee04f333c8270232}
+      \strng{authorfullhash}{649f1fd0f05fbf441e02369b14fda315}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{ACM Transactions on Software Engineering and Methodology}
+      \field{number}{8}
+      \field{title}{Large Language Models for Software Engineering: A Systematic Literature Review}
+      \field{volume}{33}
+      \field{year}{2024}
+      \field{pages}{1\bibrangedash 79}
+      \range{pages}{79}
+      \verb{doi}
+      \verb 10.1145/3695988
+      \endverb
+    \endentry
+    \entry{aidev2026}{misc}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=2620b9afd37cca5b9b7354f67c036d4d}{%
+           family={Li},
+           familyi={L\bibinitperiod},
+           given={Hao},
+           giveni={H\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{2620b9afd37cca5b9b7354f67c036d4d}
+      \strng{fullhash}{2620b9afd37cca5b9b7354f67c036d4d}
+      \strng{bibnamehash}{2620b9afd37cca5b9b7354f67c036d4d}
+      \strng{authorbibnamehash}{2620b9afd37cca5b9b7354f67c036d4d}
+      \strng{authornamehash}{2620b9afd37cca5b9b7354f67c036d4d}
+      \strng{authorfullhash}{2620b9afd37cca5b9b7354f67c036d4d}
+      \field{sortinit}{L}
+      \field{sortinithash}{7c47d417cecb1f4bd38d1825c427a61a}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Hugging Face dataset}
+      \field{title}{AIDev: A Dataset of AI Agent-Generated Pull Requests}
+      \field{urlday}{25}
+      \field{urlmonth}{8}
+      \field{urlyear}{2026}
+      \field{year}{2026}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://huggingface.co/datasets/hao-li/AIDev
+      \endverb
+      \verb{url}
+      \verb https://huggingface.co/datasets/hao-li/AIDev
+      \endverb
+    \endentry
+    \entry{dakhel2023asset}{article}{}
+      \name{author}{6}{}{%
+        {{un=0,uniquepart=base,hash=4e76e625bdc4a9ca304cba52901689de}{%
+           family={Moradi\bibnamedelima Dakhel},
+           familyi={M\bibinitperiod\bibinitdelim D\bibinitperiod},
+           given={Arghavan},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=a6aab73a9e32a3ab8245ef1dd97e2155}{%
+           family={Majdinasab},
+           familyi={M\bibinitperiod},
+           given={Vahid},
+           giveni={V\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=57e88c1586fe11d16a94bf7c1f95e7d0}{%
+           family={Nikanjam},
+           familyi={N\bibinitperiod},
+           given={Amin},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=c6c3765c6a405d9d7ef595e760e76337}{%
+           family={Khomh},
+           familyi={K\bibinitperiod},
+           given={Foutse},
+           giveni={F\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=ca64db3c701f20722385af7a6b79add7}{%
+           family={Desmarais},
+           familyi={D\bibinitperiod},
+           given={Michel\bibnamedelima C.},
+           giveni={M\bibinitperiod\bibinitdelim C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=7b5b3edf86a22761a4093a10eb259966}{%
+           family={Jiang},
+           familyi={J\bibinitperiod},
+           given={Zhen\bibnamedelima Ming},
+           giveni={Z\bibinitperiod\bibinitdelim M\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{1c0dc5cc5ebda392473ecc2b06429ad6}
+      \strng{fullhash}{280d096d0cfaf41957b69478b98d3c8a}
+      \strng{bibnamehash}{280d096d0cfaf41957b69478b98d3c8a}
+      \strng{authorbibnamehash}{280d096d0cfaf41957b69478b98d3c8a}
+      \strng{authornamehash}{1c0dc5cc5ebda392473ecc2b06429ad6}
+      \strng{authorfullhash}{280d096d0cfaf41957b69478b98d3c8a}
+      \field{sortinit}{M}
+      \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Systems and Software}
+      \field{title}{GitHub Copilot AI Pair Programmer: Asset or Liability?}
+      \field{volume}{203}
+      \field{year}{2023}
+      \field{pages}{111734}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.1016/j.jss.2023.111734
+      \endverb
+    \endentry
+    \entry{nist2024genai}{report}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=ef9cb61878e61d434507444346b29d1a}{%
+           family={{National Institute of Standards and Technology}},
+           familyi={N\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {NIST}%
+      }
+      \strng{namehash}{ef9cb61878e61d434507444346b29d1a}
+      \strng{fullhash}{ef9cb61878e61d434507444346b29d1a}
+      \strng{bibnamehash}{ef9cb61878e61d434507444346b29d1a}
+      \strng{authorbibnamehash}{ef9cb61878e61d434507444346b29d1a}
+      \strng{authornamehash}{ef9cb61878e61d434507444346b29d1a}
+      \strng{authorfullhash}{ef9cb61878e61d434507444346b29d1a}
+      \field{sortinit}{N}
+      \field{sortinithash}{22369a73d5f88983a108b63f07f37084}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{number}{NIST AI 600-1}
+      \field{title}{Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile}
+      \field{year}{2024}
+      \verb{doi}
+      \verb 10.6028/NIST.AI.600-1
+      \endverb
+    \endentry
+    \entry{oecd2024definition}{report}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=6d044557951f2f3cba2dfe69b9c625a2}{%
+           family={{OCDE}},
+           familyi={O\bibinitperiod}}}%
+      }
+      \list{institution}{2}{%
+        {Organisation for Economic Co-operation}%
+        {Development}%
+      }
+      \strng{namehash}{6d044557951f2f3cba2dfe69b9c625a2}
+      \strng{fullhash}{6d044557951f2f3cba2dfe69b9c625a2}
+      \strng{bibnamehash}{6d044557951f2f3cba2dfe69b9c625a2}
+      \strng{authorbibnamehash}{6d044557951f2f3cba2dfe69b9c625a2}
+      \strng{authornamehash}{6d044557951f2f3cba2dfe69b9c625a2}
+      \strng{authorfullhash}{6d044557951f2f3cba2dfe69b9c625a2}
+      \field{sortinit}{O}
+      \field{sortinithash}{2cd7140a07aea5341f9e2771efe90aae}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{series}{OECD Artificial Intelligence Papers}
+      \field{title}{Explanatory Memorandum on the Updated OECD Definition of an AI System}
+      \field{year}{2024}
+      \verb{doi}
+      \verb 10.1787/623da898-en
+      \endverb
+    \endentry
+    \entry{paradis2024enterprise}{article}{}
+      \name{author}{9}{}{%
+        {{un=0,uniquepart=base,hash=b89e5fce6663164076c7a8aa8770ddef}{%
+           family={Paradis},
+           familyi={P\bibinitperiod},
+           given={Elise},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6931b7e07cbd08ef2a23f88b13ebc09e}{%
+           family={Grey},
+           familyi={G\bibinitperiod},
+           given={Kate},
+           giveni={K\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=fa562c4dcf4786cfc02590bf2139dfbf}{%
+           family={Madison},
+           familyi={M\bibinitperiod},
+           given={Quinn},
+           giveni={Q\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=526c440cd2f611dddab56bff661ab767}{%
+           family={Nam},
+           familyi={N\bibinitperiod},
+           given={Daye},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=fa821b19e9365f692b0305ffbaf5674f}{%
+           family={Macvean},
+           familyi={M\bibinitperiod},
+           given={Andrew},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=e2388efc4d9b46fa50b6b2a52d482087}{%
+           family={Meimand},
+           familyi={M\bibinitperiod},
+           given={Vahid},
+           giveni={V\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=50541ce48b62a59478859829bdda8bad}{%
+           family={Zhang},
+           familyi={Z\bibinitperiod},
+           given={Nan},
+           giveni={N\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=e6283e429ca37e38ee478d1471964395}{%
+           family={Ferrari-Church},
+           familyi={F\bibinithyphendelim C\bibinitperiod},
+           given={Ben},
+           giveni={B\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=788b91e7b58d3e875446e2da289a3344}{%
+           family={Chandra},
+           familyi={C\bibinitperiod},
+           given={Satish},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{e897b0980292a92775246b95c0257c5c}
+      \strng{fullhash}{86b1c2f23389cc144715e800fa162b9a}
+      \strng{bibnamehash}{86b1c2f23389cc144715e800fa162b9a}
+      \strng{authorbibnamehash}{86b1c2f23389cc144715e800fa162b9a}
+      \strng{authornamehash}{e897b0980292a92775246b95c0257c5c}
+      \strng{authorfullhash}{86b1c2f23389cc144715e800fa162b9a}
+      \field{sortinit}{P}
+      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{arXiv preprint arXiv:2410.12944}
+      \field{title}{How Much Does AI Impact Development Speed? An Enterprise-Based Randomized Controlled Trial}
+      \field{year}{2024}
+      \verb{doi}
+      \verb 10.48550/arXiv.2410.12944
+      \endverb
+    \endentry
+    \entry{pearce2022security}{inproceedings}{}
+      \name{author}{5}{}{%
+        {{un=0,uniquepart=base,hash=864486f2366d2b55fa91c70061e1f50b}{%
+           family={Pearce},
+           familyi={P\bibinitperiod},
+           given={Hammond},
+           giveni={H\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=93ec360461fe92f0f77a6710efc37467}{%
+           family={Ahmad},
+           familyi={A\bibinitperiod},
+           given={Baleegh},
+           giveni={B\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=848564d2994e7a8185d31059cbf670e7}{%
+           family={Tan},
+           familyi={T\bibinitperiod},
+           given={Benjamin},
+           giveni={B\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f6ed6e99ecdc816b5951ab17e3336a49}{%
+           family={Dolan-Gavitt},
+           familyi={D\bibinithyphendelim G\bibinitperiod},
+           given={Brendan},
+           giveni={B\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=4d9e613e6d1d9dc241b7401fbc88b423}{%
+           family={Karri},
+           familyi={K\bibinitperiod},
+           given={Ramesh},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{583f72ba9d4c42f916c30f6ada1b3a76}
+      \strng{fullhash}{89ccacc77a79414bb6fe737947ca08ab}
+      \strng{bibnamehash}{89ccacc77a79414bb6fe737947ca08ab}
+      \strng{authorbibnamehash}{89ccacc77a79414bb6fe737947ca08ab}
+      \strng{authornamehash}{583f72ba9d4c42f916c30f6ada1b3a76}
+      \strng{authorfullhash}{89ccacc77a79414bb6fe737947ca08ab}
+      \field{sortinit}{P}
+      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{2022 IEEE Symposium on Security and Privacy}
+      \field{title}{Asleep at the Keyboard? Assessing the Security of GitHub Copilot's Code Contributions}
+      \field{year}{2022}
+      \field{pages}{754\bibrangedash 768}
+      \range{pages}{15}
+      \verb{doi}
+      \verb 10.1109/SP46214.2022.9833571
+      \endverb
+    \endentry
+    \entry{peng2023productivity}{article}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=369e0707d779067ef33cd3650d376b11}{%
+           family={Peng},
+           familyi={P\bibinitperiod},
+           given={Sida},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=526e8a3059738e61d532a18f3d59db17}{%
+           family={Kalliamvakou},
+           familyi={K\bibinitperiod},
+           given={Eirini},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=1c037448415af95b0de60ccd6832f5fd}{%
+           family={Cihon},
+           familyi={C\bibinitperiod},
+           given={Peter},
+           giveni={P\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=d3c2cc443c71254678269de10d61d61c}{%
+           family={Demirer},
+           familyi={D\bibinitperiod},
+           given={Mert},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{d4ef2548433d417ed0a08049928b3fc1}
+      \strng{fullhash}{6af98bcfb7fccfb9ca88b04097c016fa}
+      \strng{bibnamehash}{6af98bcfb7fccfb9ca88b04097c016fa}
+      \strng{authorbibnamehash}{6af98bcfb7fccfb9ca88b04097c016fa}
+      \strng{authornamehash}{d4ef2548433d417ed0a08049928b3fc1}
+      \strng{authorfullhash}{6af98bcfb7fccfb9ca88b04097c016fa}
+      \field{sortinit}{P}
+      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{arXiv preprint arXiv:2302.06590}
+      \field{title}{The Impact of AI on Developer Productivity: Evidence from GitHub Copilot}
+      \field{year}{2023}
+      \verb{doi}
+      \verb 10.48550/arXiv.2302.06590
+      \endverb
+    \endentry
+    \entry{perry2023insecure}{inproceedings}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=870d9d472005ff00b274c820215cb86f}{%
+           family={Perry},
+           familyi={P\bibinitperiod},
+           given={Neil},
+           giveni={N\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=4824ec99d0d073bcffe0fc4d0aee8c24}{%
+           family={Srivastava},
+           familyi={S\bibinitperiod},
+           given={Megha},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=ac480063a097b769bae5aa33cd291d46}{%
+           family={Kumar},
+           familyi={K\bibinitperiod},
+           given={Deepak},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=9ef331cc9e5b527723547dfa1becd8cf}{%
+           family={Boneh},
+           familyi={B\bibinitperiod},
+           given={Dan},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{e7fd0bf45a7412619bd3482ac127b371}
+      \strng{fullhash}{6d3bc62be6735e39fb90b29f7228b69f}
+      \strng{bibnamehash}{6d3bc62be6735e39fb90b29f7228b69f}
+      \strng{authorbibnamehash}{6d3bc62be6735e39fb90b29f7228b69f}
+      \strng{authornamehash}{e7fd0bf45a7412619bd3482ac127b371}
+      \strng{authorfullhash}{6d3bc62be6735e39fb90b29f7228b69f}
+      \field{sortinit}{P}
+      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proceedings of the 2023 ACM SIGSAC Conference on Computer and Communications Security}
+      \field{title}{Do Users Write More Insecure Code with AI Assistants?}
+      \field{year}{2023}
+      \field{pages}{2785\bibrangedash 2799}
+      \range{pages}{15}
+      \verb{doi}
+      \verb 10.1145/3576915.3623157
+      \endverb
+    \endentry
+    \entry{vaithilingam2022expectation}{inproceedings}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=f6a33bdc2adae5d5edb80649cb2a0edc}{%
+           family={Vaithilingam},
+           familyi={V\bibinitperiod},
+           given={Priyan},
+           giveni={P\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=733e3732b7e3ce5cf2b04cf5e9bd9cf1}{%
+           family={Zhang},
+           familyi={Z\bibinitperiod},
+           given={Tianyi},
+           giveni={T\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=303c8ea2919a9822e35d20a8bda5799c}{%
+           family={Glassman},
+           familyi={G\bibinitperiod},
+           given={Elena\bibnamedelima L.},
+           giveni={E\bibinitperiod\bibinitdelim L\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{dd0fe51485f20df77cc749c1d2141f23}
+      \strng{fullhash}{b2283578668b65c51243e2b44ce62546}
+      \strng{bibnamehash}{b2283578668b65c51243e2b44ce62546}
+      \strng{authorbibnamehash}{b2283578668b65c51243e2b44ce62546}
+      \strng{authornamehash}{dd0fe51485f20df77cc749c1d2141f23}
+      \strng{authorfullhash}{b2283578668b65c51243e2b44ce62546}
+      \field{sortinit}{V}
+      \field{sortinithash}{afb52128e5b4dc4b843768c0113d673b}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{CHI Conference on Human Factors in Computing Systems Extended Abstracts}
+      \field{title}{Expectation vs. Experience: Evaluating the Usability of Code Generation Tools Powered by Large Language Models}
+      \field{year}{2022}
+      \field{pages}{1\bibrangedash 7}
+      \range{pages}{7}
+      \verb{doi}
+      \verb 10.1145/3491101.3519665
+      \endverb
+    \endentry
+    \entry{yetistiren2023quality}{article}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=a98fcc45a73bbee87cc13f7c8c7fdfb4}{%
+           family={Yetiştiren},
+           familyi={Y\bibinitperiod},
+           given={Burak},
+           giveni={B\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=338e89e8d81d150014bec4a0d5e5cd2f}{%
+           family={Özsoy},
+           familyi={Ö\bibinitperiod},
+           given={Işık},
+           giveni={I\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=9e9215afbf8c89ab1a266e7fa3c02e0a}{%
+           family={Ayerdem},
+           familyi={A\bibinitperiod},
+           given={Miray},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=9eeebbefb360f3f22f94800bfd30cae7}{%
+           family={Tüzün},
+           familyi={T\bibinitperiod},
+           given={Eray},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{38f1187707859f36d038d99b5860088c}
+      \strng{fullhash}{44d48a250071416536e8d5853c44a0be}
+      \strng{bibnamehash}{44d48a250071416536e8d5853c44a0be}
+      \strng{authorbibnamehash}{44d48a250071416536e8d5853c44a0be}
+      \strng{authornamehash}{38f1187707859f36d038d99b5860088c}
+      \strng{authorfullhash}{44d48a250071416536e8d5853c44a0be}
+      \field{sortinit}{Y}
+      \field{sortinithash}{fd67ad5a9ef0f7456bdd9aab10fe1495}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{arXiv preprint arXiv:2304.10778}
+      \field{title}{Evaluating the Code Quality of AI-Assisted Code Generation Tools: An Empirical Study on GitHub Copilot, Amazon CodeWhisperer, and ChatGPT}
+      \field{year}{2023}
+      \verb{doi}
+      \verb 10.48550/arXiv.2304.10778
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

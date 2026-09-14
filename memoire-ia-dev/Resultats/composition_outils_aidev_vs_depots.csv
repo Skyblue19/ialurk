@@ -1,0 +1,13 @@
+outil,nombre,corpus,part_pct
+claude_code,18232,AIDev (positifs de reference),0.6644668411657472
+copilot,349695,AIDev (positifs de reference),12.744664985819215
+cursor,212544,AIDev (positifs de reference),7.746184745981383
+devin,43298,AIDev (positifs de reference),1.5779994125051842
+google_jules,50490,AIDev (positifs de reference),1.8401124841190528
+codex,2069595,AIDev (positifs de reference),75.42657153040942
+claude_code,341,Depots etudies (detections),9.994138335287222
+codex,469,Depots etudies (detections),13.745603751465415
+copilot,2471,Depots etudies (detections),72.42086752637749
+cursor,95,Depots etudies (detections),2.7842907385697537
+devin,11,Depots etudies (detections),0.3223915592028136
+google_jules,25,Depots etudies (detections),0.7327080890973037

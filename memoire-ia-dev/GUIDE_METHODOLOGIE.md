@@ -168,31 +168,32 @@ Lorsque `build_annual_summary()` ou `build_quarterly_summary()` recoit les detai
 AIDev est un corpus public de PR deja attribuees a des agents. La commande suivante evalue toutes ses PR :
 
 ```powershell
-.\.venv\Scripts\memoire-ia-dev.exe eval-aidev data\processed\aidev_full_report.json --records-output data\processed\aidev_full_records.csv
+.\.venv\Scripts\memoire-ia-dev.exe eval-aidev data\processed\aidev_full_report.json --records-output data\processed\aidev_full_records.csv --detector-version v2 --comparison-output data\processed\aidev_detector_comparison.json
 ```
 
 Elle produit :
 
 - `data/processed/aidev_full_report.json` : rappel global et rappel par outil ;
 - `data/processed/aidev_full_records.csv` : resultat ligne par ligne pour audit.
+- `data/processed/aidev_detector_comparison.json` : rapports complets V1 et V2.
 
 Resultat de la derniere execution :
 
 | Outil | PR AIDev | PR detectees | Rappel |
 |---|---:|---:|---:|
-| Claude Code | 18 232 | 17 064 | 93,59 % |
-| Copilot | 349 695 | 345 027 | 98,67 % |
-| Cursor | 212 544 | 168 821 | 79,43 % |
+| Claude Code | 18 232 | 17 065 | 93,60 % |
+| Copilot | 349 695 | 345 028 | 98,67 % |
+| Cursor | 212 544 | 185 325 | 87,19 % |
 | Devin | 43 298 | 43 298 | 100,00 % |
 | Google Jules | 50 490 | 50 449 | 99,92 % |
-| OpenAI Codex | 2 069 595 | 1 970 339 | 95,20 % |
-| Total | 2 743 854 | 2 594 998 | 94,57 % |
+| OpenAI Codex | 2 069 595 | 1 970 516 | 95,21 % |
+| Total | 2 743 854 | 2 611 681 | 95,18 % |
 
 Pour Cursor, le rappel conditionnel atteint 97,68 % quand AIDev fournit les donnees de commit. Son rappel brut est plus bas parce que cette table ne couvre que 1,91 % de ses PR.
 
 ## 9. Ce que ces resultats permettent et ne permettent pas de dire
 
-Le test AIDev donne un **rappel** : parmi les PR positives du dataset de reference, le pipeline retrouve 94,57 % des attributions. Il ne donne pas une precision valide, car AIDev ne contient pas un echantillon de PR negatives certifiees humaines.
+Le test AIDev donne un **rappel** : parmi les PR positives du dataset de reference, la V2 retrouve 95,18 % des attributions, contre 94,57 % pour la V1. Il ne donne pas une precision valide, car AIDev ne contient pas un echantillon de PR negatives certifiees humaines.
 
 Pour mesurer la precision :
 
@@ -201,9 +202,15 @@ Pour mesurer la precision :
 3. Etiqueter `attribution_explicitement_presente`, `attribution_explicitement_absente` ou `indetermine`.
 4. Rapporter le nombre de cas indetermines et calculer la precision sur les cas verifiables.
 
-Ne pas presenter 94,57 % comme une certitude sur l'origine du code. La formulation correcte est : le detecteur retrouve 94,57 % des attributions explicites presentes dans AIDev, selon les regles et la version du dataset utilisees.
+Ne pas presenter 95,18 % comme une certitude sur l'origine du code. La formulation correcte est : la V2 du detecteur retrouve 95,18 % des attributions explicites presentes dans AIDev, selon les regles et la version du dataset utilisees.
 
 ## 10. Reproductibilite
+
+- Tester V2 sur les huit jeux de PR locaux et produire le rapport detaille :
+
+```powershell
+.\.venv\Scripts\python.exe scripts\validate_v2_repositories.py
+```
 
 - Executer les tests :
 
