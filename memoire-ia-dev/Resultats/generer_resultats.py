@@ -3,32 +3,38 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
-import shutil
 
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from memoire_ia_dev.analysis import compare_periods
 from memoire_ia_dev.prs import tag_prs
 
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw"
 OUTPUT = Path(__file__).resolve().parent
-V2_GRAPHS = ROOT / "Graphes_V2"
 START = "2020-06-01"
 END = "2026-08-25"
+QUARTERS = pd.period_range("2020Q2", "2026Q3", freq="Q").astype(str).tolist()
+EVIDENCE_TYPES = ("structurelle", "convention_branche", "auto_declaration")
+EVIDENCE_LABELS = {
+    "structurelle": "Identité structurelle",
+    "convention_branche": "Convention de branche",
+    "auto_declaration": "Auto-déclaration",
+}
+EXPECTED_TOTALS = {"commits": 347_168, "commits_ia": 7_996, "prs": 246_767, "prs_ia": 3_412}
 
 REPOSITORIES = {
-    "microsoft/vscode": {"prefix": "microsoft_vscode", "bascule": "2024-11-28", "groupe": "adoption", "echantillon": "principal"},
-    "home-assistant/core": {"prefix": "home-assistant_core", "bascule": "2025-02-19", "groupe": "adoption", "echantillon": "principal"},
-    "vercel/next.js": {"prefix": "vercel_next.js", "bascule": "2026-01-05", "groupe": "adoption", "echantillon": "principal"},
-    "godotengine/godot": {"prefix": "godotengine_godot", "bascule": None, "groupe": "temoin", "echantillon": "principal"},
-    "redis/redis": {"prefix": "redis_redis", "bascule": None, "groupe": "temoin", "echantillon": "principal"},
-    "django/django": {"prefix": "django_django", "bascule": None, "groupe": "temoin", "echantillon": "principal"},
-    "ppy/osu": {"prefix": "osu", "commits_file": "osu_commits_2020_2026.csv", "prs_file": "osu_prs_2020_2026.csv", "bascule": None, "groupe": "exploratoire", "echantillon": "exploratoire"},
-    "oven-sh/bun": {"prefix": "bun", "commits_file": "bun_commits_2020_2026.csv", "prs_file": "bun_prs_2020_2026.csv", "bascule": None, "groupe": "exploratoire", "echantillon": "exploratoire"},
+    "microsoft/vscode": {"prefix": "microsoft_vscode"},
+    "home-assistant/core": {"prefix": "home-assistant_core"},
+    "vercel/next.js": {"prefix": "vercel_next.js"},
+    "godotengine/godot": {"prefix": "godotengine_godot"},
+    "redis/redis": {"prefix": "redis_redis"},
+    "django/django": {"prefix": "django_django"},
+    "ppy/osu": {"prefix": "osu", "commits_file": "osu_commits_2020_2026.csv", "prs_file": "osu_prs_2020_2026.csv"},
+    "oven-sh/bun": {"prefix": "bun", "commits_file": "bun_commits_2020_2026.csv", "prs_file": "bun_prs_2020_2026.csv"},
 }
 
 def load_channel(
@@ -49,21 +55,20 @@ def rate(frame: pd.DataFrame) -> float:
     return float(frame["ai_attribue"].mean() * 100) if len(frame) else 0.0
 
 
-def build_results() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def build_results() -> tuple[pd.DataFrame, pd.DataFrame, dict[str, pd.DataFrame]]:
     repository_rows = []
-    comparison_rows = []
     quarterly_rows = []
+    channels: dict[str, list[pd.DataFrame]] = {"commits": [], "prs": []}
     for repository, metadata in REPOSITORIES.items():
         prefix = metadata["prefix"]
         commits = load_channel(RAW / metadata.get("commits_file", f"{prefix}_commits.csv"), "date", repository)
         prs = load_channel(
             RAW / metadata.get("prs_file", f"{prefix}_prs.csv"), "created_at", repository, "v2",
         )
+        channels["commits"].append(commits)
+        channels["prs"].append(prs)
         repository_rows.append({
             "depot": repository,
-            "groupe": metadata["groupe"],
-            "echantillon": metadata["echantillon"],
-            "date_bascule": metadata["bascule"],
             "commits": len(commits),
             "commits_ia": int(commits["ai_attribue"].sum()),
             "taux_commits_ia_pct": rate(commits),
@@ -71,54 +76,104 @@ def build_results() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
             "prs_ia": int(prs["ai_attribue"].sum()),
             "taux_prs_ia_pct": rate(prs),
         })
-        for quarter in sorted(set(commits["annee_trimestre"]) | set(prs["annee_trimestre"])):
+        for quarter in QUARTERS:
             commit_quarter = commits.loc[commits["annee_trimestre"] == quarter]
             pr_quarter = prs.loc[prs["annee_trimestre"] == quarter]
             quarterly_rows.append({
-                "depot": repository, "groupe": metadata["groupe"], "echantillon": metadata["echantillon"],
-                "annee_trimestre": quarter,
+                "depot": repository, "annee_trimestre": quarter,
                 "commits": len(commit_quarter), "commits_ia": int(commit_quarter["ai_attribue"].sum()),
                 "taux_commits_ia_pct": rate(commit_quarter), "prs": len(pr_quarter),
                 "prs_ia": int(pr_quarter["ai_attribue"].sum()), "taux_prs_ia_pct": rate(pr_quarter),
             })
-        if metadata["bascule"]:
-            threshold = pd.Timestamp(metadata["bascule"], tz="UTC")
-            for channel, frame, date_column in (("commits", commits, "date"), ("prs", prs, "created_at")):
-                periods = frame.copy()
-                periods["periode"] = periods[date_column].ge(threshold).map({True: "apres", False: "avant"})
-                period_rates = periods.groupby("annee_trimestre", as_index=False).agg(
-                    periode=("periode", "first"), taux_ia_pct=("ai_attribue", lambda series: series.mean() * 100)
-                )
-                statistics = compare_periods(period_rates, "taux_ia_pct")
-                comparison_rows.append({
-                    "depot": repository, "canal": channel, "date_bascule": metadata["bascule"],
-                    "taux_avant_pct": rate(periods.loc[periods["periode"] == "avant"]),
-                    "taux_apres_pct": rate(periods.loc[periods["periode"] == "apres"]),
-                    **statistics,
-                })
-    return pd.DataFrame(repository_rows), pd.DataFrame(comparison_rows), pd.DataFrame(quarterly_rows)
+    return (
+        pd.DataFrame(repository_rows),
+        pd.DataFrame(quarterly_rows),
+        {name: pd.concat(frames, ignore_index=True) for name, frames in channels.items()},
+    )
 
 
-def build_detector_comparison() -> pd.DataFrame:
+def build_global_channel_evolution(quarterly: pd.DataFrame) -> pd.DataFrame:
+    return quarterly.groupby("annee_trimestre", as_index=False).agg(
+        taux_commits_ia_pct=("taux_commits_ia_pct", "mean"),
+        taux_prs_ia_pct=("taux_prs_ia_pct", "mean"),
+    )
+
+
+def build_evidence_type_summary(channels: dict[str, pd.DataFrame]) -> tuple[pd.DataFrame, pd.DataFrame]:
     rows = []
-    for repository, metadata in REPOSITORIES.items():
-        path = RAW / metadata.get("prs_file", f"{metadata['prefix']}_prs.csv")
-        source = pd.read_csv(path, low_memory=False)
-        v1 = tag_prs(source, version="v1")
-        v2 = tag_prs(source, version="v2")
-        rows.append({
-            "depot": repository,
-            "prs": len(source),
-            "detectees_v1": int(v1["ai_attribue"].sum()),
-            "detectees_v2": int(v2["ai_attribue"].sum()),
-            "gain_v2": int(v2["ai_attribue"].sum() - v1["ai_attribue"].sum()),
-            "taux_v1_pct": rate(v1),
-            "taux_v2_pct": rate(v2),
-        })
+    global_rows = []
+    for channel, frame in channels.items():
+        detected = frame.loc[frame["ai_attribue"]]
+        assert detected["type_preuve"].notna().all(), f"Attribution {channel} sans type_preuve"
+        unknown = set(detected["type_preuve"].unique()) - set(EVIDENCE_TYPES)
+        assert not unknown, f"Types de preuve inconnus pour {channel}: {sorted(unknown)}"
+        counts = detected["type_preuve"].value_counts()
+        assert int(counts.sum()) == int(frame["ai_attribue"].sum())
+        for evidence_type in EVIDENCE_TYPES:
+            evidence_count = int(counts.get(evidence_type, 0))
+            global_rows.append({
+                "canal": channel,
+                "type_preuve": evidence_type,
+                "detections": evidence_count,
+                "part_des_detections_pct": evidence_count / len(detected) * 100 if len(detected) else 0.0,
+            })
+        for repository in REPOSITORIES:
+            repository_frame = frame.loc[frame["depot"] == repository]
+            for quarter in QUARTERS:
+                quarter_frame = repository_frame.loc[repository_frame["annee_trimestre"] == quarter]
+                total = len(quarter_frame)
+                for evidence_type in EVIDENCE_TYPES:
+                    detections = int(
+                        (quarter_frame["ai_attribue"] & quarter_frame["type_preuve"].eq(evidence_type)).sum()
+                    )
+                    rows.append({
+                        "depot": repository,
+                        "annee_trimestre": quarter,
+                        "canal": channel,
+                        "type_preuve": evidence_type,
+                        "contributions_total": total,
+                        "detections_type": detections,
+                        "taux_type_pct": detections / total * 100 if total else 0.0,
+                    })
+    detail = pd.DataFrame(rows)
+    global_summary = pd.DataFrame(global_rows)
+    for channel, frame in channels.items():
+        assert int(global_summary.loc[global_summary["canal"] == channel, "detections"].sum()) == int(frame["ai_attribue"].sum())
+    return detail, global_summary
+
+
+def build_bun_evidence_case(prs: pd.DataFrame) -> pd.DataFrame:
+    bun = prs.loc[
+        prs["depot"].eq("oven-sh/bun") & prs["annee_trimestre"].between("2025Q1", "2026Q3")
+    ]
+    rows = []
+    for quarter in pd.period_range("2025Q1", "2026Q3", freq="Q").astype(str):
+        quarter_frame = bun.loc[bun["annee_trimestre"] == quarter]
+        row = {
+            "annee_trimestre": quarter,
+            "prs_total": len(quarter_frame),
+            "prs_ia": int(quarter_frame["ai_attribue"].sum()),
+            "taux_prs_ia_pct": rate(quarter_frame),
+        }
+        for evidence_type in EVIDENCE_TYPES:
+            row[evidence_type] = int(
+                (quarter_frame["ai_attribue"] & quarter_frame["type_preuve"].eq(evidence_type)).sum()
+            )
+        assert sum(row[evidence_type] for evidence_type in EVIDENCE_TYPES) == row["prs_ia"]
+        rows.append(row)
     return pd.DataFrame(rows)
 
 
-def plot_results(repository_summary: pd.DataFrame, quarterly: pd.DataFrame) -> None:
+def _mark_incomplete_quarter(axes: list[plt.Axes]) -> None:
+    for axis in axes:
+        axis.axvspan(len(QUARTERS) - 1.45, len(QUARTERS) - 0.55, color="#f4a261", alpha=0.16)
+        axis.text(
+            len(QUARTERS) - 1, axis.get_ylim()[1] * 0.96, "Incomplet\nau 25 août",
+            ha="center", va="top", fontsize=8, color="#9c4f18",
+        )
+
+
+def plot_repository_attribution(repository_summary: pd.DataFrame) -> None:
     plt.style.use("seaborn-v0_8-whitegrid")
     figure, axis = plt.subplots(figsize=(10, 5))
     positions = range(len(repository_summary))
@@ -128,29 +183,100 @@ def plot_results(repository_summary: pd.DataFrame, quarterly: pd.DataFrame) -> N
     axis.set_ylabel("Attributions explicites IA (%)")
     axis.legend()
     figure.tight_layout()
+    figure.savefig(OUTPUT / "attribution_par_depot.png", dpi=180)
     figure.savefig(OUTPUT / "taux_attribution_par_depot.png", dpi=180)
     plt.close(figure)
 
-    global_quarterly = quarterly.groupby("annee_trimestre", as_index=False).agg(
-        taux_prs_ia_pct=("taux_prs_ia_pct", "mean"),
+
+def plot_global_channel_evolution(evolution: pd.DataFrame) -> None:
+    figure, axes = plt.subplots(2, 1, figsize=(12, 8), sharex=True, sharey=True)
+    specifications = (
+        ("taux_commits_ia_pct", "Commits", "#287271"),
+        ("taux_prs_ia_pct", "Pull requests", "#e76f51"),
     )
-    figure, axis = plt.subplots(figsize=(12, 6))
-    axis.plot(
-        global_quarterly["annee_trimestre"], global_quarterly["taux_prs_ia_pct"],
-        marker="o", color="#287271", linewidth=2, label="Moyenne des huit depots",
-    )
-    axis.set_ylabel("Attributions explicites IA dans les PR (%)")
-    axis.set_xlabel("Trimestre")
-    axis.set_title("Evolution trimestrielle moyenne des PR attribuees a l'IA")
-    axis.tick_params(axis="x", rotation=45)
-    axis.legend()
+    for axis, (column, title, color) in zip(axes, specifications):
+        axis.plot(evolution["annee_trimestre"], evolution[column], marker="o", color=color, linewidth=2)
+        axis.set_title(title, loc="left", fontweight="bold")
+        axis.set_ylabel("Taux moyen (%)")
+        axis.grid(axis="x", alpha=0.25)
+    axes[-1].set_xlabel("Trimestre")
+    axes[-1].tick_params(axis="x", rotation=45)
+    _mark_incomplete_quarter(list(axes))
     figure.text(
-        0.5, 0.01,
-        "Moyenne arithmetique des taux des huit depots (meme poids); 2026Q3 incomplet au 25 aout.",
+        0.5, 0.015,
+        "Moyenne arithmétique des taux des huit dépôts, avec un poids identique par dépôt.",
         ha="center", fontsize=9,
     )
-    figure.tight_layout(rect=(0, 0.04, 1, 1))
-    figure.savefig(OUTPUT / "evolution_trimestrielle_prs.png", dpi=180)
+    figure.suptitle("Évolution trimestrielle des attributions explicites à l’IA")
+    figure.tight_layout(rect=(0, 0.045, 1, 0.97))
+    figure.savefig(OUTPUT / "evolution_trimestrielle_commits_prs.png", dpi=180)
+    plt.close(figure)
+
+
+def plot_evidence_type_evolution(detail: pd.DataFrame, quarterly: pd.DataFrame) -> None:
+    global_types = detail.groupby(["canal", "annee_trimestre", "type_preuve"], as_index=False).agg(
+        taux_type_pct=("taux_type_pct", "mean")
+    )
+    global_rates = build_global_channel_evolution(quarterly).set_index("annee_trimestre")
+    colors = {"structurelle": "#287271", "convention_branche": "#e9c46a", "auto_declaration": "#e76f51"}
+    figure, axes = plt.subplots(2, 1, figsize=(12, 9), sharex=True, sharey=True)
+    for axis, channel, title, rate_column in (
+        (axes[0], "commits", "Commits", "taux_commits_ia_pct"),
+        (axes[1], "prs", "Pull requests", "taux_prs_ia_pct"),
+    ):
+        pivot = global_types.loc[global_types["canal"] == channel].pivot(
+            index="annee_trimestre", columns="type_preuve", values="taux_type_pct"
+        ).reindex(index=QUARTERS, columns=EVIDENCE_TYPES, fill_value=0.0)
+        assert (pivot.sum(axis=1) - global_rates[rate_column]).abs().max() < 1e-9
+        axis.stackplot(
+            QUARTERS,
+            *[pivot[evidence_type] for evidence_type in EVIDENCE_TYPES],
+            labels=[EVIDENCE_LABELS[evidence_type] for evidence_type in EVIDENCE_TYPES],
+            colors=[colors[evidence_type] for evidence_type in EVIDENCE_TYPES],
+            alpha=0.9,
+        )
+        axis.set_title(title, loc="left", fontweight="bold")
+        axis.set_ylabel("Contribution au taux moyen (%)")
+    axes[0].legend(loc="upper left", ncols=3)
+    axes[-1].set_xlabel("Trimestre")
+    axes[-1].tick_params(axis="x", rotation=45)
+    _mark_incomplete_quarter(list(axes))
+    figure.suptitle("Évolution des attributions explicites par type de preuve")
+    figure.tight_layout(rect=(0, 0, 1, 0.97))
+    figure.savefig(OUTPUT / "evolution_types_preuve.png", dpi=180)
+    plt.close(figure)
+
+
+def plot_bun_evidence_case(bun: pd.DataFrame) -> None:
+    figure, axes = plt.subplots(2, 1, figsize=(11, 8), sharex=True)
+    positions = list(range(len(bun)))
+    bottoms = pd.Series(0, index=bun.index, dtype=float)
+    colors = {"structurelle": "#287271", "convention_branche": "#e9c46a", "auto_declaration": "#e76f51"}
+    for evidence_type in EVIDENCE_TYPES:
+        axes[0].bar(
+            positions, bun[evidence_type], bottom=bottoms,
+            label=EVIDENCE_LABELS[evidence_type], color=colors[evidence_type],
+        )
+        bottoms += bun[evidence_type]
+    axes[0].set_ylabel("PR détectées")
+    axes[0].set_title("A. Nombre de PR par type de preuve", loc="left", fontweight="bold")
+    axes[0].legend(ncols=3)
+    bars = axes[1].bar(positions, bun["taux_prs_ia_pct"], color="#287271")
+    axes[1].bar_label(
+        bars,
+        labels=[f"{row.prs_ia} / {row.prs_total} PR" for row in bun.itertuples()],
+        padding=3, fontsize=8, rotation=90,
+    )
+    axes[1].set_ylabel("PR attribuées à l’IA (%)")
+    axes[1].set_title("B. Taux parmi toutes les PR de Bun", loc="left", fontweight="bold")
+    axes[1].set_xticks(positions, bun["annee_trimestre"], rotation=35, ha="right")
+    axes[1].set_ylim(0, max(float(bun["taux_prs_ia_pct"].max()) * 1.3, 1.0))
+    for axis in axes:
+        axis.axvspan(len(bun) - 1.45, len(bun) - 0.55, color="#f4a261", alpha=0.16)
+    figure.text(0.88, 0.02, "2026Q3 incomplet au 25 août", ha="right", fontsize=9, color="#9c4f18")
+    figure.suptitle("Bun : évolution trimestrielle des traces explicites dans les pull requests")
+    figure.tight_layout(rect=(0, 0.04, 1, 0.97))
+    figure.savefig(OUTPUT / "bun_types_preuve_trimestriels.png", dpi=180)
     plt.close(figure)
 
 
@@ -190,7 +316,7 @@ def plot_aidev(performance: pd.DataFrame, composition: pd.DataFrame) -> None:
     global_recall = performance["n_detecte"].sum() / performance["n_reference"].sum() * 100
     axis.axvline(
         global_recall, color="#d1495b", linestyle="--",
-        label=f"Rappel global V2: {global_recall:.2f} %".replace(".", ","),
+        label=f"Rappel global : {global_recall:.2f} %".replace(".", ","),
     )
     axis.set_xlim(0, 105)
     axis.set_xlabel("Rappel sur les PR positives AIDev (%)")
@@ -215,179 +341,175 @@ def plot_aidev(performance: pd.DataFrame, composition: pd.DataFrame) -> None:
     plt.close(figure)
 
 
-def export_v2_graphs(detector_comparison: pd.DataFrame) -> None:
-    V2_GRAPHS.mkdir(exist_ok=True)
-    graph_names = (
-        "taux_attribution_par_depot.png",
-        "evolution_trimestrielle_prs.png",
-        "performance_aidev_par_outil.png",
-        "composition_outils_aidev_vs_depots.png",
+def write_aidev_provenance(aidev_report: dict[str, object]) -> None:
+    report_path = ROOT / "data" / "processed" / "aidev_full_report.json"
+    provenance = {
+        "dataset": "hao-li/AIDev",
+        "configuration": "all_pull_request",
+        "dataset_revision": None,
+        "dataset_revision_note": "Aucun hash de revision verifiable dans les metadonnees locales.",
+        "evaluation_report_modified_at_utc": datetime.fromtimestamp(
+            report_path.stat().st_mtime, tz=timezone.utc
+        ).isoformat(),
+        "nombre_pr": int(aidev_report["n_reference"]),
+        "categories": {
+            row["outil_reference"]: int(row["n_reference"])
+            for row in aidev_report["rappel_par_outil"]
+        },
+    }
+    (OUTPUT / "provenance_aidev.json").write_text(
+        json.dumps(provenance, ensure_ascii=False, indent=2), encoding="utf-8"
     )
-    for graph_name in graph_names:
-        shutil.copy2(OUTPUT / graph_name, V2_GRAPHS / graph_name)
-
-    figure, (rate_axis, gain_axis) = plt.subplots(
-        1, 2, figsize=(15, 6), gridspec_kw={"width_ratios": [2.3, 1]},
-    )
-    positions = range(len(detector_comparison))
-    bars_v1 = rate_axis.bar(
-        [position - 0.2 for position in positions], detector_comparison["taux_v1_pct"],
-        width=0.4, color="#8b9aa3", label="V1",
-    )
-    bars_v2 = rate_axis.bar(
-        [position + 0.2 for position in positions], detector_comparison["taux_v2_pct"],
-        width=0.4, color="#287271", label="V2",
-    )
-    rate_axis.set_xticks(list(positions), detector_comparison["depot"], rotation=30, ha="right")
-    rate_axis.set_ylabel("PR avec attribution explicite IA (%)")
-    rate_axis.set_title("Taux de detection")
-    rate_axis.legend()
-    rate_axis.bar_label(bars_v1, fmt="%.3f", padding=2, fontsize=7, rotation=90)
-    rate_axis.bar_label(bars_v2, fmt="%.3f", padding=2, fontsize=7, rotation=90)
-
-    gains = detector_comparison.sort_values("gain_v2")
-    gain_bars = gain_axis.barh(gains["depot"], gains["gain_v2"], color="#d1495b")
-    gain_axis.bar_label(gain_bars, fmt="%+d", padding=3)
-    gain_axis.set_xlim(0, max(2.5, float(gains["gain_v2"].max()) + 0.7))
-    gain_axis.set_xlabel("Nouvelles PR detectees par V2")
-    gain_axis.set_title("Gain V2")
-    figure.suptitle("Comparaison des detecteurs V1 et V2 sur les huit depots")
-    figure.tight_layout()
-    figure.savefig(V2_GRAPHS / "comparaison_v1_v2_par_depot.png", dpi=180)
-    plt.close(figure)
 
 
 def write_note(
-    repository_summary: pd.DataFrame, comparisons: pd.DataFrame,
-    aidev_performance: pd.DataFrame, aidev_report: dict[str, object],
-    external_report: dict[str, object], detector_comparison: pd.DataFrame,
-    v2_validation: dict[str, object],
+    repository_summary: pd.DataFrame,
+    evolution: pd.DataFrame,
+    evidence_global: pd.DataFrame,
+    bun: pd.DataFrame,
+    aidev_performance: pd.DataFrame,
+    aidev_report: dict[str, object],
 ) -> None:
-    primary = repository_summary.loc[repository_summary["echantillon"] == "principal"]
-    exploratory = repository_summary.loc[repository_summary["echantillon"] == "exploratoire"]
-    total_commits = int(primary["commits"].sum())
-    total_prs = int(primary["prs"].sum())
-    total_commits_ia = int(primary["commits_ia"].sum())
-    total_prs_ia = int(primary["prs_ia"].sum())
+    total_commits = int(repository_summary["commits"].sum())
+    total_prs = int(repository_summary["prs"].sum())
+    total_commits_ia = int(repository_summary["commits_ia"].sum())
+    total_prs_ia = int(repository_summary["prs_ia"].sum())
     rows = "\n".join(
-        f"| {row.depot} | {row.echantillon} | {row.groupe} | {int(row.commits):,} | {int(row.commits_ia):,} | {row.taux_commits_ia_pct:.2f} | {int(row.prs):,} | {int(row.prs_ia):,} | {row.taux_prs_ia_pct:.2f} |"
+        f"| {row.depot} | {int(row.commits):,} | {int(row.commits_ia):,} | {row.taux_commits_ia_pct:.2f} | {int(row.prs):,} | {int(row.prs_ia):,} | {row.taux_prs_ia_pct:.2f} |"
         for row in repository_summary.itertuples()
     )
-    comparison_lines = "\n".join(
-        f"| {row.depot} | {row.canal} | {row.taux_avant_pct:.2f} | {row.taux_apres_pct:.2f} | {row.p_value:.4g} | {row.effet_rang_biseriel:.3f} | {int(row.n_avant)} | {int(row.n_apres)} |"
-        for row in comparisons.itertuples()
+    evidence_lines = "\n".join(
+        f"| {'Commits' if row.canal == 'commits' else 'Pull requests'} | {EVIDENCE_LABELS[row.type_preuve]} | {int(row.detections):,} | {row.part_des_detections_pct:.2f} |"
+        for row in evidence_global.itertuples()
+    )
+    bun_lines = "\n".join(
+        f"| {row.annee_trimestre} | {int(row.prs_total):,} | {int(row.prs_ia):,} | {row.taux_prs_ia_pct:.2f} | {int(row.structurelle)} | {int(row.convention_branche)} | {int(row.auto_declaration)} |"
+        for row in bun.itertuples()
     )
     aidev_lines = "\n".join(
         f"| {row.outil} | {int(row.n_reference):,} | {int(row.n_detecte):,} | {row.rappel_pct:.2f} | {row.couverture_donnees_commit * 100:.2f} |"
         for row in aidev_performance.itertuples()
     )
-    agenticflict_v1 = external_report["v1"]["agenticflict"]
-    agenticflict = external_report["v2"]["agenticflict"]
-    test_coverage_v1 = external_report["v1"]["test_coverage_positifs"]
-    test_coverage = external_report["v2"]["test_coverage_positifs"]
-    test_coverage_humans = external_report["test_coverage_humains"]
-    detector_lines = "\n".join(
-        f"| {row.depot} | {int(row.detectees_v1):,} | {int(row.detectees_v2):,} | {int(row.gain_v2):+,} | {row.taux_v1_pct:.2f} | {row.taux_v2_pct:.2f} |"
-        for row in detector_comparison.itertuples()
-    )
     (OUTPUT / "RESULTATS.md").write_text(f"""# Resultats
 
-## 1. Methode et perimetre
+## 1. Perimetre
 
-La synthese couvre six depots GitHub dans l'echantillon principal et deux depots exploratoires, du {START} au {END}. Les commits sont dates par date auteur et les pull requests par `created_at`. Les canaux commits et PR restent separes. Une attribution ne mesure que des signaux explicites et observables (compte d'agent, convention de branche, lien d'agent ou auto-declaration), pas la part de code ecrite par IA.
+La synthese couvre huit depots GitHub du {START} au {END}. Le dernier trimestre, 2026Q3, est incomplet au 25 aout. Les commits sont dates par date auteur et les pull requests par `created_at`. Ces deux canaux restent separes.
 
-Trois depots ont une bascule d'adoption documentee : Microsoft VS Code (2024-11-28), Home Assistant Core (2025-02-19) et Next.js (2026-01-05). Godot et Redis sont des temoins sans bascule identifiee. Django est traite comme temoin : son fichier Copilot est classe `rejet`, pas adoption. osu! et Bun, analyses avant la constitution du manifeste final, sont reintegres comme cohorte exploratoire : ils enrichissent la description mais ne modifient pas les tests confirmatoires du plan principal.
+Une attribution designe uniquement un signal explicite et observable dans les metadonnees Git ou GitHub : identite dediee, convention de branche ou auto-declaration. Elle ne mesure ni la part de code ecrite par IA, ni l'usage non declare d'un outil.
 
-## 2. Resultats descriptifs
+## 2. Resultats globaux par depot
 
-Les resultats PR ci-dessous utilisent le detecteur V2; les commits conservent les regles existantes. L'echantillon principal contient {total_commits:,} commits, dont {total_commits_ia:,} attributions explicites ({total_commits_ia / total_commits * 100:.2f} %), et {total_prs:,} PR, dont {total_prs_ia:,} attributions explicites ({total_prs_ia / total_prs * 100:.2f} %). La cohorte exploratoire ajoute {int(exploratory['commits'].sum()):,} commits et {int(exploratory['prs'].sum()):,} PR.
+Le corpus contient {total_commits:,} commits, dont {total_commits_ia:,} avec attribution explicite ({total_commits_ia / total_commits * 100:.2f} %), et {total_prs:,} pull requests, dont {total_prs_ia:,} avec attribution explicite ({total_prs_ia / total_prs * 100:.2f} %).
 
-| Depot | Echantillon | Groupe | Commits | Commits IA | Taux commits IA (%) | PR | PR IA | Taux PR IA (%) |
-|---|---|---|---:|---:|---:|---:|---:|---:|
+| Depot | Commits | Commits IA | Taux commits IA (%) | PR | PR IA | Taux PR IA (%) |
+|---|---:|---:|---:|---:|---:|---:|
 {rows}
 
-### Comparaison des detecteurs PR
+Le graphique `attribution_par_depot.png` represente simultanement les taux des deux canaux pour chacun des huit depots.
 
-La V1 reste reproductible et les CSV bruts ne sont pas modifies. La V2 ajoute des URL de taches Cursor/Codex et des formulations d'auto-declaration strictes.
+## 3. Evolution temporelle commits / PR
 
-| Depot | Detectees V1 | Detectees V2 | Gain V2 | Taux V1 (%) | Taux V2 (%) |
-|---|---:|---:|---:|---:|---:|
-{detector_lines}
+Pour chaque depot et chaque trimestre, le taux correspond au nombre de contributions attribuees divise par le nombre total de contributions du meme canal. La courbe globale est ensuite la moyenne arithmetique des huit taux. Elle ne correspond donc pas au rapport entre les sommes globales, qui donnerait davantage de poids aux gros depots.
 
-Le test d'integration V2 a traite {int(v2_validation['prs_testees']):,} PR dans les {int(v2_validation['nombre_depots_testes'])} depots. Son statut global est `{v2_validation['statut_global']}` : {int(v2_validation['detectees_v1']):,} detections V1 et {int(v2_validation['detectees_v2']):,} detections V2, soit {int(v2_validation['nouvelles_v2']):,} ajouts sans perte d'une detection V1. Le detail auditable se trouve dans `validation_v2_huit_depots.json`.
+`evolution_trimestrielle_commits_prs.png` presente deux panneaux avec le meme axe temporel et la meme echelle verticale. Les valeurs correspondantes sont dans `evolution_globale_par_canal.csv`. 2026Q3 y est signale comme incomplet.
 
-`evolution_trimestrielle_prs.png` contient une seule courbe globale. Pour chaque depot et chaque trimestre, un taux individuel est d'abord calcule : `PR attribuees a l'IA / toutes les PR du depot`. Le point global est ensuite la moyenne arithmetique des huit taux individuels. Chaque depot a donc le meme poids, quelle que soit sa quantite de PR. Ce choix correspond a une moyenne des comportements des depots; il ne faut pas le confondre avec le taux pondere `somme(PR IA) / somme(PR)`, dans lequel les plus gros depots domineraient.
+## 4. Repartition par type de preuve
 
-Les groupes Adoption, Temoin et Exploratoire restent utiles pour definir le protocole et les tests, mais ne sont plus representes dans cette figure. La courbe mesure la frequence moyenne des attributions explicites, pas la performance du detecteur ni la proportion exacte de code produit par IA.
+Les detections sont reparties entre identites structurelles, conventions de branche et auto-declarations. Chaque contribution detectee appartient a une seule categorie, selon le premier signal retenu par le detecteur.
 
-La baisse apparente de Bun apres 2025 ne permet pas de conclure a une baisse de son usage reel de l'IA. Elle correspond d'abord a la disparition de signaux explicites detectables : 124 PR identifiees par une convention de branche au deuxieme trimestre 2025, puis 53 auto-declarations Claude au quatrieme trimestre 2025, contre seulement 4 a 5 PR detectees par trimestre en 2026. Simultanement, le denominateur augmente fortement, d'environ 800-1 050 PR par trimestre en 2025 a 1 721, 2 466 et 2 494 PR lors des trois trimestres observes de 2026. Le taux passe donc de 15,57 % en 2025Q2 et 5,04 % en 2025Q4 a 0,23 %, 0,20 % et 0,16 % en 2026. Le dernier trimestre, 2026Q3, est en outre incomplet puisque la collecte s'arrete au 25 aout. L'interpretation defendable est une baisse des attributions explicites observees, possiblement liee a un changement d'outil, de convention de branche ou de pratique de declaration; les donnees ne permettent pas de choisir entre ces causes ni d'affirmer que l'usage non declare a diminue.
+| Canal | Type de preuve | Detections | Part des detections (%) |
+|---|---|---:|---:|
+{evidence_lines}
 
-## 3. Comparaisons avant/apres
+`evolution_types_preuve.png` montre la contribution de chaque type au taux total, et non sa seule proportion parmi les detections. Les donnees detaillees figurent dans `types_preuve_trimestriels.csv` et les totaux dans `types_preuve_globaux.csv`.
 
-Les tests Mann-Whitney U sont appliques aux taux trimestriels, pas aux PR ou commits individuels. Le tableau ci-dessous est descriptif et inferentiel a la fois; les tres petites periodes post-bascule, notamment Next.js, limitent la puissance.
+## 5. Cas Bun
 
-| Depot | Canal | Taux avant (%) | Taux apres (%) | p-value | Effet rang-biseriel | Trimestres avant | Trimestres apres |
-|---|---|---:|---:|---:|---:|---:|---:|
-{comparison_lines}
+| Trimestre | PR totales | PR IA | Taux (%) | Structurelle | Convention de branche | Auto-declaration |
+|---|---:|---:|---:|---:|---:|---:|
+{bun_lines}
 
-## 4. Interpretation et limites
+`bun_types_preuve_trimestriels.png` montre que l'evolution du taux depend a la fois du nombre de traces detectees, de leur nature et du volume total de PR. Une baisse du taux observe ne suffit pas a conclure a une baisse de l'usage reel de l'IA.
 
-### Validation externe avec AIDev
+## 6. Validation AIDev
 
-AIDev est un corpus de {int(aidev_report['n_reference']):,} PR positives deja associees a un agent. Le detecteur en retrouve {int(aidev_report['n_detecte']):,}, soit un rappel global de {float(aidev_report['rappel_global']) * 100:.2f} %. La precision n'est pas calculable sur ce corpus seul, faute de PR negatives certifiees.
+AIDev contient {int(aidev_report['n_reference']):,} PR positives deja associees a un agent. Le detecteur final en retrouve {int(aidev_report['n_detecte']):,}, soit un rappel global de {float(aidev_report['rappel_global']) * 100:.2f} %. La precision n'est pas calculable sur ce corpus seul, faute de PR negatives certifiees.
 
 | Outil | Positifs AIDev | Detectes | Rappel (%) | Couverture commits (%) |
 |---|---:|---:|---:|---:|
 {aidev_lines}
 
-`performance_aidev_par_outil.png` compare le rappel par outil. `composition_outils_aidev_vs_depots.png` compare uniquement la repartition des outils parmi les positifs AIDev et parmi les detections des huit depots. Cette seconde comparaison renseigne sur les differences de composition des corpus, pas sur leur prevalence d'usage IA : AIDev vaut 100 % positif par construction.
+Les six categories du tableau proviennent de la configuration `all_pull_request` du corpus AIDev. Elles ne constituent pas la liste exhaustive des outils reconnus par le detecteur. Selon le canal, celui-ci contient aussi des regles pour Aider, Replit, Codegen, Terragon ou Wildcard. La provenance locale disponible est enregistree dans `provenance_aidev.json`; aucun hash de revision n'a ete trouve dans les metadonnees locales.
 
-La validation Bun fournit un controle supplementaire sur une fenetre commune : 182 vrais positifs sur 182 cas AIDev apparies (rappel 100 %) et une precision apparente de 96,81 %. Cette precision reste qualifiee d'apparente, car les PR non labellisees par AIDev ne sont pas des negatifs humains certifies.
+## 7. Limites d'interpretation
 
-### Jeux de donnees complementaires
-
-Plusieurs corpus publics peuvent completer AIDev, mais ils ne repondent pas tous a la meme question :
-
-| Corpus | Apport possible | Limite pour cette etude | Priorite |
-|---|---|---|---|
-| [DevGPT v10](https://doi.org/10.5281/zenodo.16392320) | 17 913 echanges ChatGPT relies a des artefacts GitHub, dont des commits et des PR; les liens partages constituent des positifs explicites d'un type absent d'AIDev | Ancien et limite a ChatGPT; un adaptateur de schema et une deduplication des snapshots sont necessaires | Haute |
-| [PatchTrack](https://doi.org/10.5281/zenodo.16945106) | 338 PR de 255 depots avec usage ChatGPT auto-declare, 645 suggestions IA et 3 486 patches developpeur | Petit corpus et possible recouvrement avec DevGPT a verifier avant de le qualifier d'independant | Haute pour un audit manuel |
-| [AgenticFlict](https://doi.org/10.5281/zenodo.19396916) | Plus de 142 000 PR agentiques dans plus de 59 000 depots, avec identifiants et donnees de conflits | Il faut auditer la construction des labels et mesurer le recouvrement avec AIDev; le volume seul ne garantit pas une validation independante | Moyenne |
-| [Test Coverage of AI-Generated PRs](https://doi.org/10.5281/zenodo.18019124) | 2 314 PR pretraitees, groupes IA, co-auteur et humain, plus une evaluation manuelle a trois annotateurs | Corpus concu pour la couverture de tests, pas pour certifier l'attribution IA; les PR humaines ne sont pas automatiquement des negatifs certifies pour notre detecteur | Moyenne |
-
-AgenticFlict et Test Coverage ont aussi ete evalues en reutilisant les metadonnees de PR d'AIDev comme cache hors ligne. Sur AgenticFlict, {int(agenticflict['hydratation']['n_hydrate']):,} des {int(agenticflict['hydratation']['n_reference']):,} PR ont pu etre hydratees : le rappel passe de {float(agenticflict_v1['rappel_global']) * 100:.2f} % en V1 a {float(agenticflict['rappel_global']) * 100:.2f} % en V2. Sur les groupes IA et co-auteur de Test Coverage, {int(test_coverage['hydratation']['n_hydrate']):,} des {int(test_coverage['hydratation']['n_reference']):,} PR ont ete hydratees : le rappel passe de {float(test_coverage_v1['rappel_global']) * 100:.2f} % a {float(test_coverage['rappel_global']) * 100:.2f} %.
-
-Ces deux scores ne constituent pas des validations independantes d'AIDev : les corpus sont derives de sa population et les champs servant au detecteur proviennent de sa table. En outre, la table AIDev utilisee ne contient ni branche de PR ni identite de commit. Cela penalise surtout Cursor (34,71 % sur AgenticFlict et 4,08 % sur Test Coverage) et Codex (86,68 % et 65,65 %), dont une partie des signaux depend de ces champs. Parmi les {int(test_coverage_humans['n_reference']):,} PR humaines de Test Coverage, seules {int(test_coverage_humans['n_hydrate']):,} figurent dans AIDev; la precision ne peut donc pas etre calculee hors ligne sur ce groupe.
-
-DevGPT eprouve un autre mode d'auto-declaration : les liens `chat.openai.com/share/...`. Le detecteur actuel ne traite pas ce lien generique comme une attribution. Toute extension de cette regle doit etre evaluee sur un jeu reserve ou par validation croisee afin d'eviter d'adapter puis de tester le detecteur sur les memes observations.
-
-Les resultats decrivent la visibilite des attributions explicites, non l'usage reel de l'IA. L'absence de signal ne prouve donc pas l'absence d'utilisation. Les differences entre depots peuvent aussi refleter les politiques de contribution, les conventions de branche, la composition des comptes automatises et les pratiques de revue.
-
-Les comparaisons avant/apres ne permettent pas a elles seules une inference causale : les bascules ne sont pas assignees aleatoirement et les changements temporels peuvent avoir d'autres causes. Les temoins servent a contextualiser les tendances, mais ne garantissent pas le parallelisme des trajectoires. Enfin, la precision ne peut pas etre deduite du corpus AIDev, qui est compose de cas positifs; la validation V2 disponible etablit un rappel global de {float(aidev_report['rappel_global']) * 100:.2f} %.
+Les resultats decrivent la visibilite des attributions explicites, pas l'usage reel de l'IA. L'absence de signal ne prouve pas l'absence d'utilisation. Les differences entre depots peuvent provenir des politiques de contribution, des conventions de branche, des outils ou des pratiques de declaration. La moyenne non ponderee donne le meme poids aux huit depots et doit etre lue comme une moyenne de projets, pas comme un taux global pondere par le nombre de contributions. Enfin, AIDev mesure le rappel sur des cas positifs mais ne permet pas d'estimer la precision du detecteur.
 """, encoding="utf-8")
 
 
 def main() -> None:
     OUTPUT.mkdir(exist_ok=True)
-    repository_summary, comparisons, quarterly = build_results()
+    repository_summary, quarterly, channels = build_results()
+    totals = {
+        "commits": int(repository_summary["commits"].sum()),
+        "commits_ia": int(repository_summary["commits_ia"].sum()),
+        "prs": int(repository_summary["prs"].sum()),
+        "prs_ia": int(repository_summary["prs_ia"].sum()),
+    }
+    assert totals == EXPECTED_TOTALS, f"Divergence des totaux: attendus={EXPECTED_TOTALS}, obtenus={totals}"
     repository_summary.to_csv(OUTPUT / "synthese_par_depot.csv", index=False)
-    comparisons.to_csv(OUTPUT / "comparaisons_avant_apres.csv", index=False)
     quarterly.to_csv(OUTPUT / "synthese_trimestrielle.csv", index=False)
-    detector_comparison = build_detector_comparison()
-    detector_comparison.to_csv(OUTPUT / "comparaison_detecteurs_v1_v2.csv", index=False)
-    v2_validation = json.loads((OUTPUT / "validation_v2_huit_depots.json").read_text(encoding="utf-8"))
-    plot_results(repository_summary, quarterly)
+    evolution = build_global_channel_evolution(quarterly)
+    evolution.to_csv(OUTPUT / "evolution_globale_par_canal.csv", index=False)
+    evidence_detail, evidence_global = build_evidence_type_summary(channels)
+    evidence_detail.to_csv(OUTPUT / "types_preuve_trimestriels.csv", index=False)
+    evidence_global.to_csv(OUTPUT / "types_preuve_globaux.csv", index=False)
+    bun = build_bun_evidence_case(channels["prs"])
+    bun.to_csv(OUTPUT / "bun_types_preuve_trimestriels.csv", index=False)
+    bun_tool_detail = (
+        channels["prs"].loc[
+            channels["prs"]["depot"].eq("oven-sh/bun")
+            & channels["prs"]["ai_attribue"]
+            & channels["prs"]["annee_trimestre"].between("2025Q1", "2026Q3")
+        ]
+        .groupby(["annee_trimestre", "type_preuve", "outil"], as_index=False)
+        .size()
+    )
+    plot_repository_attribution(repository_summary)
+    plot_global_channel_evolution(evolution)
+    plot_evidence_type_evolution(evidence_detail, quarterly)
+    plot_bun_evidence_case(bun)
     aidev_performance, tool_composition, aidev_report = build_aidev_results()
-    external_report = json.loads((ROOT / "data" / "processed" / "external_dataset_validation_report.json").read_text(encoding="utf-8"))
     aidev_performance.to_csv(OUTPUT / "performance_aidev.csv", index=False)
     tool_composition.to_csv(OUTPUT / "composition_outils_aidev_vs_depots.csv", index=False)
     plot_aidev(aidev_performance, tool_composition)
-    export_v2_graphs(detector_comparison)
-    write_note(
-        repository_summary, comparisons, aidev_performance, aidev_report,
-        external_report, detector_comparison, v2_validation,
-    )
+    write_aidev_provenance(aidev_report)
+    write_note(repository_summary, evolution, evidence_global, bun, aidev_performance, aidev_report)
     (OUTPUT / "manifest_resultats.json").write_text(json.dumps({"start": START, "end": END, "repositories": REPOSITORIES}, indent=2), encoding="utf-8")
+    print("Totaux verifies:", totals)
+    print("\nDetections par type de preuve:")
+    print(evidence_global.to_string(index=False))
+    print("\nBun 2025Q1 -> 2026Q3:")
+    print(bun.to_string(index=False))
+    print("\nDetail Bun par type de preuve et outil:")
+    print(bun_tool_detail.to_string(index=False))
+    print("\nPNG generes:")
+    for name in (
+        "attribution_par_depot.png", "taux_attribution_par_depot.png",
+        "evolution_trimestrielle_commits_prs.png", "evolution_types_preuve.png",
+        "bun_types_preuve_trimestriels.png", "performance_aidev_par_outil.png",
+        "composition_outils_aidev_vs_depots.png",
+    ):
+        print(OUTPUT / name)
+    print("\nCSV generes:")
+    for name in (
+        "synthese_par_depot.csv", "synthese_trimestrielle.csv",
+        "evolution_globale_par_canal.csv", "types_preuve_trimestriels.csv",
+        "types_preuve_globaux.csv", "bun_types_preuve_trimestriels.csv",
+        "performance_aidev.csv", "composition_outils_aidev_vs_depots.csv",
+    ):
+        print(OUTPUT / name)
 
 
 if __name__ == "__main__":

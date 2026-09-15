@@ -1,0 +1,16 @@
+{
+  "dataset": "hao-li/AIDev",
+  "configuration": "all_pull_request",
+  "dataset_revision": null,
+  "dataset_revision_note": "Aucun hash de revision verifiable dans les metadonnees locales.",
+  "evaluation_report_modified_at_utc": "2026-08-30T15:09:30.515311+00:00",
+  "nombre_pr": 2743854,
+  "categories": {
+    "Claude_Code": 18232,
+    "Copilot": 349695,
+    "Cursor": 212544,
+    "Devin": 43298,
+    "Google_Jules": 50490,
+    "OpenAI_Codex": 2069595
+  }
+}
