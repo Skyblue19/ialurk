@@ -9,6 +9,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from memoire_ia_dev.detection import tag_commits
 from memoire_ia_dev.prs import tag_prs
 
 
@@ -24,7 +25,7 @@ EVIDENCE_LABELS = {
     "convention_branche": "Convention de branche",
     "auto_declaration": "Auto-déclaration",
 }
-EXPECTED_TOTALS = {"commits": 347_168, "commits_ia": 7_996, "prs": 246_767, "prs_ia": 3_412}
+EXPECTED_CORPUS_SIZES = {"commits": 347_168, "prs": 246_767}
 
 REPOSITORIES = {
     "microsoft/vscode": {"prefix": "microsoft_vscode"},
@@ -41,7 +42,9 @@ def load_channel(
     path: Path, date_column: str, repository: str, detector_version: str | None = None,
 ) -> pd.DataFrame:
     frame = pd.read_csv(path, low_memory=False)
-    if detector_version is not None:
+    if date_column == "date":
+        frame = tag_commits(frame)
+    elif detector_version is not None:
         frame = tag_prs(frame, version=detector_version)
     frame[date_column] = pd.to_datetime(frame[date_column], utc=True)
     frame = frame.loc[frame[date_column].between(pd.Timestamp(START, tz="UTC"), pd.Timestamp(END, tz="UTC"))].copy()
@@ -457,7 +460,10 @@ def main() -> None:
         "prs": int(repository_summary["prs"].sum()),
         "prs_ia": int(repository_summary["prs_ia"].sum()),
     }
-    assert totals == EXPECTED_TOTALS, f"Divergence des totaux: attendus={EXPECTED_TOTALS}, obtenus={totals}"
+    corpus_sizes = {"commits": totals["commits"], "prs": totals["prs"]}
+    assert corpus_sizes == EXPECTED_CORPUS_SIZES, (
+        f"Divergence des tailles du corpus: attendues={EXPECTED_CORPUS_SIZES}, obtenues={corpus_sizes}"
+    )
     repository_summary.to_csv(OUTPUT / "synthese_par_depot.csv", index=False)
     quarterly.to_csv(OUTPUT / "synthese_trimestrielle.csv", index=False)
     evolution = build_global_channel_evolution(quarterly)

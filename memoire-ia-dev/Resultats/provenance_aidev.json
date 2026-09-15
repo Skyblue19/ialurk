@@ -3,7 +3,7 @@
   "configuration": "all_pull_request",
   "dataset_revision": null,
   "dataset_revision_note": "Aucun hash de revision verifiable dans les metadonnees locales.",
-  "evaluation_report_modified_at_utc": "2026-08-30T15:09:30.515311+00:00",
+  "evaluation_report_modified_at_utc": "2026-09-15T21:15:38.061799+00:00",
   "nombre_pr": 2743854,
   "categories": {
     "Claude_Code": 18232,

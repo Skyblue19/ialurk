@@ -20,7 +20,17 @@ class Attribution:
 
 COMMIT_RULES: tuple[tuple[str, str, str, re.Pattern[str]], ...] = (
     ("claude_code", "auto_declaration", "author_email", re.compile(r"noreply@anthropic\.com", re.I)),
-    ("claude_code", "auto_declaration", "message", re.compile(r"co-authored-by:\s*claude|generated with claude code", re.I)),
+    ("claude_code", "auto_declaration", "message", re.compile(
+        r"co-authored-by:\s*(?:"
+        r"claude(?:\s+[^\n<]*?)?\s*(?:"
+        r"<(?:noreply@anthropic\.com|claude@anthropic\.ai)>|"
+        r"\[noreply@anthropic\.com\]\(mailto:noreply@anthropic\.com\)"
+        r")|"
+        r"claude\[bot\]\s*<\d+\+claude\[bot\]@users\.noreply\.github\.com>|"
+        r"claude bot\s*<claude-bot@bun\.sh>"
+        r")|generated with claude code",
+        re.I,
+    )),
     ("copilot", "auto_declaration", "message", re.compile(r"co-authored-by:\s*copilot\b", re.I)),
     ("aider", "auto_declaration", "author_name", re.compile(r"\(aider\)", re.I)),
     ("aider", "auto_declaration", "message", re.compile(r"^aider:", re.I)),

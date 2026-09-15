@@ -8,7 +8,7 @@ Une attribution designe uniquement un signal explicite et observable dans les me
 
 ## 2. Resultats globaux par depot
 
-Le corpus contient 347,168 commits, dont 7,996 avec attribution explicite (2.30 %), et 246,767 pull requests, dont 3,412 avec attribution explicite (1.38 %).
+Le corpus contient 347,168 commits, dont 7,992 avec attribution explicite (2.30 %), et 246,767 pull requests, dont 3,412 avec attribution explicite (1.38 %).
 
 | Depot | Commits | Commits IA | Taux commits IA (%) | PR | PR IA | Taux PR IA (%) |
 |---|---:|---:|---:|---:|---:|---:|
@@ -16,8 +16,8 @@ Le corpus contient 347,168 commits, dont 7,996 avec attribution explicite (2.30 
 | home-assistant/core | 88,323 | 2,155 | 2.44 | 83,434 | 358 | 0.43 |
 | vercel/next.js | 29,257 | 148 | 0.51 | 31,682 | 321 | 1.01 |
 | godotengine/godot | 57,203 | 1 | 0.00 | 37,507 | 18 | 0.05 |
-| redis/redis | 3,868 | 22 | 0.57 | 4,670 | 16 | 0.34 |
-| django/django | 6,423 | 3 | 0.05 | 8,279 | 15 | 0.18 |
+| redis/redis | 3,868 | 21 | 0.54 | 4,670 | 16 | 0.34 |
+| django/django | 6,423 | 0 | 0.00 | 8,279 | 15 | 0.18 |
 | ppy/osu | 47,207 | 0 | 0.00 | 10,077 | 0 | 0.00 |
 | oven-sh/bun | 17,546 | 693 | 3.95 | 16,230 | 226 | 1.39 |
 
@@ -37,7 +37,7 @@ Les detections sont reparties entre identites structurelles, conventions de bran
 |---|---|---:|---:|
 | Commits | Identité structurelle | 3 | 0.04 |
 | Commits | Convention de branche | 0 | 0.00 |
-| Commits | Auto-déclaration | 7,993 | 99.96 |
+| Commits | Auto-déclaration | 7,989 | 99.96 |
 | Pull requests | Identité structurelle | 2,174 | 63.72 |
 | Pull requests | Convention de branche | 786 | 23.04 |
 | Pull requests | Auto-déclaration | 452 | 13.25 |
@@ -60,11 +60,11 @@ Les detections sont reparties entre identites structurelles, conventions de bran
 
 ## 6. Validation AIDev
 
-AIDev contient 2,743,854 PR positives deja associees a un agent. Le detecteur final en retrouve 2,611,681, soit un rappel global de 95.18 %. La precision n'est pas calculable sur ce corpus seul, faute de PR negatives certifiees.
+AIDev contient 2,743,854 PR positives deja associees a un agent. Le detecteur final en retrouve 2,611,375, soit un rappel global de 95.17 %. La precision n'est pas calculable sur ce corpus seul, faute de PR negatives certifiees.
 
 | Outil | Positifs AIDev | Detectes | Rappel (%) | Couverture commits (%) |
 |---|---:|---:|---:|---:|
-| claude_code | 18,232 | 17,065 | 93.60 | 10.49 |
+| claude_code | 18,232 | 16,759 | 91.92 | 10.49 |
 | copilot | 349,695 | 345,028 | 98.67 | 6.71 |
 | cursor | 212,544 | 185,325 | 87.19 | 1.91 |
 | devin | 43,298 | 43,298 | 100.00 | 14.24 |

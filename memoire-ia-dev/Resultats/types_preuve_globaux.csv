@@ -1,7 +1,7 @@
 canal,type_preuve,detections,part_des_detections_pct
-commits,structurelle,3,0.03751875937968985
+commits,structurelle,3,0.03753753753753754
 commits,convention_branche,0,0.0
-commits,auto_declaration,7993,99.96248124062032
+commits,auto_declaration,7989,99.96246246246247
 prs,structurelle,2174,63.71629542790153
 prs,convention_branche,786,23.036342321219227
 prs,auto_declaration,452,13.247362250879249

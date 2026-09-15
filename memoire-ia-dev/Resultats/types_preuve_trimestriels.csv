@@ -385,7 +385,7 @@ redis/redis,2026Q1,commits,convention_branche,157,0,0.0
 redis/redis,2026Q1,commits,auto_declaration,157,1,0.6369426751592357
 redis/redis,2026Q2,commits,structurelle,144,0,0.0
 redis/redis,2026Q2,commits,convention_branche,144,0,0.0
-redis/redis,2026Q2,commits,auto_declaration,144,8,5.555555555555555
+redis/redis,2026Q2,commits,auto_declaration,144,7,4.861111111111112
 redis/redis,2026Q3,commits,structurelle,103,0,0.0
 redis/redis,2026Q3,commits,convention_branche,103,0,0.0
 redis/redis,2026Q3,commits,auto_declaration,103,5,4.854368932038835
@@ -397,7 +397,7 @@ django/django,2020Q3,commits,convention_branche,283,0,0.0
 django/django,2020Q3,commits,auto_declaration,283,0,0.0
 django/django,2020Q4,commits,structurelle,285,0,0.0
 django/django,2020Q4,commits,convention_branche,285,0,0.0
-django/django,2020Q4,commits,auto_declaration,285,1,0.3508771929824561
+django/django,2020Q4,commits,auto_declaration,285,0,0.0
 django/django,2021Q1,commits,structurelle,349,0,0.0
 django/django,2021Q1,commits,convention_branche,349,0,0.0
 django/django,2021Q1,commits,auto_declaration,349,0,0.0
@@ -409,7 +409,7 @@ django/django,2021Q3,commits,convention_branche,320,0,0.0
 django/django,2021Q3,commits,auto_declaration,320,0,0.0
 django/django,2021Q4,commits,structurelle,271,0,0.0
 django/django,2021Q4,commits,convention_branche,271,0,0.0
-django/django,2021Q4,commits,auto_declaration,271,1,0.36900369003690037
+django/django,2021Q4,commits,auto_declaration,271,0,0.0
 django/django,2022Q1,commits,structurelle,268,0,0.0
 django/django,2022Q1,commits,convention_branche,268,0,0.0
 django/django,2022Q1,commits,auto_declaration,268,0,0.0
@@ -418,7 +418,7 @@ django/django,2022Q2,commits,convention_branche,222,0,0.0
 django/django,2022Q2,commits,auto_declaration,222,0,0.0
 django/django,2022Q3,commits,structurelle,250,0,0.0
 django/django,2022Q3,commits,convention_branche,250,0,0.0
-django/django,2022Q3,commits,auto_declaration,250,1,0.4
+django/django,2022Q3,commits,auto_declaration,250,0,0.0
 django/django,2022Q4,commits,structurelle,222,0,0.0
 django/django,2022Q4,commits,convention_branche,222,0,0.0
 django/django,2022Q4,commits,auto_declaration,222,0,0.0
